@@ -1,0 +1,241 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: proxilion
+  namespace: proxilion
+  labels:
+    app: proxilion
+    component: proxy
+    version: v1.0.0
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: proxilion
+      component: proxy
+  template:
+    metadata:
+      labels:
+        app: proxilion
+        component: proxy
+        version: v1.0.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8787"
+        prometheus.io/path: "/metrics/prometheus"
+    spec:
+      serviceAccountName: proxilion
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        fsGroup: 1001
+      containers:
+      - name: proxilion
+        image: proxilion/proxilion:latest
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 8787
+          protocol: TCP
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: ENVIRONMENT
+          valueFrom:
+            configMapKeyRef:
+              name: proxilion-config
+              key: environment
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+              name: proxilion-config
+              key: log_level
+        - name: OTEL_EXPORTER_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: proxilion-config
+              key: otel_exporter_endpoint
+        - name: OTEL_EXPORTER_TYPE
+          valueFrom:
+            configMapKeyRef:
+              name: proxilion-config
+              key: otel_exporter_type
+        - name: OTEL_SAMPLING_RATE
+          valueFrom:
+            configMapKeyRef:
+              name: proxilion-config
+              key: otel_sampling_rate
+        resources:
+          requests:
+            cpu: 500m
+            memory: 512Mi
+          limits:
+            cpu: 2000m
+            memory: 2Gi
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          successThreshold: 1
+          failureThreshold: 3
+        volumeMounts:
+        - name: config
+          mountPath: /app/config
+          readOnly: true
+        - name: tmp
+          mountPath: /tmp
+      volumes:
+      - name: config
+        configMap:
+          name: proxilion-config
+      - name: tmp
+        emptyDir: {}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - proxilion
+              topologyKey: kubernetes.io/hostname
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: topology.kubernetes.io/zone
+        whenUnsatisfiable: ScheduleAnyway
+        labelSelector:
+          matchLabels:
+            app: proxilion
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: proxilion
+  namespace: proxilion
+  labels:
+    app: proxilion
+    component: proxy
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8787"
+    prometheus.io/path: "/metrics/prometheus"
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 80
+    targetPort: http
+    protocol: TCP
+  - name: metrics
+    port: 8787
+    targetPort: http
+    protocol: TCP
+  selector:
+    app: proxilion
+    component: proxy
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: proxilion
+  namespace: proxilion
+  labels:
+    app: proxilion
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: proxilion-config
+  namespace: proxilion
+  labels:
+    app: proxilion
+data:
+  environment: "production"
+  log_level: "info"
+  otel_exporter_endpoint: "http://jaeger-collector.observability.svc.cluster.local:14268/api/traces"
+  otel_exporter_type: "jaeger"
+  otel_sampling_rate: "0.1"
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: proxilion
+  namespace: proxilion
+  labels:
+    app: proxilion
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: proxilion
+      component: proxy
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: proxilion
+  namespace: proxilion
+  labels:
+    app: proxilion
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: proxilion
+  minReplicas: 3
+  maxReplicas: 20
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 50
+        periodSeconds: 60
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 30
+      - type: Pods
+        value: 2
+        periodSeconds: 30
+      selectPolicy: Max
+

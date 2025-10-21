@@ -1,0 +1,234 @@
+# Prometheus alert rules for Proxilion
+
+groups:
+  - name: proxilion_alerts
+    interval: 30s
+    rules:
+      # High error rate
+      - alert: HighErrorRate
+        expr: rate(proxilion_errors_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: critical
+          component: proxy
+        annotations:
+          summary: "High error rate detected in Proxilion"
+          description: "Error rate is {{ $value | humanize }} errors/sec (threshold: 10/sec)"
+          runbook_url: "https://docs.proxilion.dev/runbooks/high-error-rate"
+
+      # High threat level
+      - alert: CriticalThreatsDetected
+        expr: sum(rate(proxilion_threats_detected_total{threat_level="CRITICAL"}[5m])) > 5
+        for: 1m
+        labels:
+          severity: critical
+          component: security
+        annotations:
+          summary: "Critical security threats detected"
+          description: "{{ $value | humanize }} critical threats detected in last 5 minutes"
+          runbook_url: "https://docs.proxilion.dev/runbooks/critical-threats"
+
+      # High block rate
+      - alert: HighBlockRate
+        expr: rate(proxilion_requests_blocked_total[5m]) / rate(proxilion_requests_total[5m]) > 0.1
+        for: 10m
+        labels:
+          severity: warning
+          component: security
+        annotations:
+          summary: "High request block rate"
+          description: "{{ $value | humanizePercentage }} of requests are being blocked"
+          runbook_url: "https://docs.proxilion.dev/runbooks/high-block-rate"
+
+      # Low cache hit ratio
+      - alert: LowCacheHitRatio
+        expr: proxilion_cache_hit_ratio < 0.3
+        for: 15m
+        labels:
+          severity: warning
+          component: performance
+        annotations:
+          summary: "Low cache hit ratio"
+          description: "Cache hit ratio is {{ $value | humanizePercentage }} (threshold: 30%)"
+          runbook_url: "https://docs.proxilion.dev/runbooks/low-cache-hit-ratio"
+
+      # High latency
+      - alert: HighLatency
+        expr: histogram_quantile(0.95, rate(proxilion_request_duration_seconds_bucket[5m])) > 2
+        for: 10m
+        labels:
+          severity: warning
+          component: performance
+        annotations:
+          summary: "High request latency"
+          description: "P95 latency is {{ $value | humanizeDuration }} (threshold: 2s)"
+          runbook_url: "https://docs.proxilion.dev/runbooks/high-latency"
+
+      # Very high latency
+      - alert: VeryHighLatency
+        expr: histogram_quantile(0.95, rate(proxilion_request_duration_seconds_bucket[5m])) > 5
+        for: 5m
+        labels:
+          severity: critical
+          component: performance
+        annotations:
+          summary: "Very high request latency"
+          description: "P95 latency is {{ $value | humanizeDuration }} (threshold: 5s)"
+          runbook_url: "https://docs.proxilion.dev/runbooks/very-high-latency"
+
+      # High cost
+      - alert: HighAICost
+        expr: increase(proxilion_cost_total_dollars[1h]) > 100
+        for: 5m
+        labels:
+          severity: warning
+          component: cost
+        annotations:
+          summary: "High AI costs detected"
+          description: "Cost is ${{ $value | humanize }} in last hour (threshold: $100/hour)"
+          runbook_url: "https://docs.proxilion.dev/runbooks/high-cost"
+
+      # Very high cost
+      - alert: VeryHighAICost
+        expr: increase(proxilion_cost_total_dollars[1h]) > 500
+        for: 1m
+        labels:
+          severity: critical
+          component: cost
+        annotations:
+          summary: "Very high AI costs detected"
+          description: "Cost is ${{ $value | humanize }} in last hour (threshold: $500/hour)"
+          runbook_url: "https://docs.proxilion.dev/runbooks/very-high-cost"
+
+      # Backend unhealthy
+      - alert: BackendUnhealthy
+        expr: proxilion_loadbalancer_backend_health < 1
+        for: 2m
+        labels:
+          severity: critical
+          component: loadbalancer
+        annotations:
+          summary: "Backend {{ $labels.backend }} is unhealthy"
+          description: "Backend has been unhealthy for 2 minutes"
+          runbook_url: "https://docs.proxilion.dev/runbooks/backend-unhealthy"
+
+      # High failure rate
+      - alert: HighBackendFailureRate
+        expr: rate(proxilion_loadbalancer_failures_total[5m]) > 5
+        for: 5m
+        labels:
+          severity: warning
+          component: loadbalancer
+        annotations:
+          summary: "High backend failure rate"
+          description: "Backend {{ $labels.backend }} failure rate is {{ $value | humanize }}/sec"
+          runbook_url: "https://docs.proxilion.dev/runbooks/high-failure-rate"
+
+      # Many users need training
+      - alert: ManyUsersNeedTraining
+        expr: proxilion_users_needing_training_total > 50
+        for: 1h
+        labels:
+          severity: warning
+          component: analytics
+        annotations:
+          summary: "Many users need security training"
+          description: "{{ $value }} users need training in organization {{ $labels.organization }}"
+          runbook_url: "https://docs.proxilion.dev/runbooks/users-need-training"
+
+      # High risk users
+      - alert: HighRiskUsers
+        expr: proxilion_high_risk_users_total > 10
+        for: 30m
+        labels:
+          severity: critical
+          component: analytics
+        annotations:
+          summary: "High number of high-risk users"
+          description: "{{ $value }} high-risk users detected in organization {{ $labels.organization }}"
+          runbook_url: "https://docs.proxilion.dev/runbooks/high-risk-users"
+
+      # Low compliance score
+      - alert: LowComplianceScore
+        expr: proxilion_compliance_score < 70
+        for: 1h
+        labels:
+          severity: warning
+          component: compliance
+        annotations:
+          summary: "Low compliance score"
+          description: "Compliance score is {{ $value }}% for organization {{ $labels.organization }}"
+          runbook_url: "https://docs.proxilion.dev/runbooks/low-compliance-score"
+
+      # Service down
+      - alert: ProxilionDown
+        expr: up{job="proxilion"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: proxy
+        annotations:
+          summary: "Proxilion service is down"
+          description: "Proxilion instance {{ $labels.instance }} is down"
+          runbook_url: "https://docs.proxilion.dev/runbooks/service-down"
+
+      # High memory usage
+      - alert: HighMemoryUsage
+        expr: (process_resident_memory_bytes / process_virtual_memory_max_bytes) > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "High memory usage"
+          description: "Memory usage is {{ $value | humanizePercentage }} on {{ $labels.instance }}"
+          runbook_url: "https://docs.proxilion.dev/runbooks/high-memory-usage"
+
+      # Rate limit exceeded frequently
+      - alert: FrequentRateLimitExceeded
+        expr: rate(proxilion_rate_limit_exceeded_total[5m]) > 10
+        for: 10m
+        labels:
+          severity: warning
+          component: ratelimit
+        annotations:
+          summary: "Rate limits frequently exceeded"
+          description: "Rate limit exceeded {{ $value | humanize }} times/sec"
+          runbook_url: "https://docs.proxilion.dev/runbooks/rate-limit-exceeded"
+
+      # PII detections spike
+      - alert: PIIDetectionSpike
+        expr: rate(proxilion_pii_detections_total[5m]) > 20
+        for: 5m
+        labels:
+          severity: warning
+          component: security
+        annotations:
+          summary: "Spike in PII detections"
+          description: "PII detection rate is {{ $value | humanize }}/sec (threshold: 20/sec)"
+          runbook_url: "https://docs.proxilion.dev/runbooks/pii-spike"
+
+      # Prompt injection attempts
+      - alert: PromptInjectionAttempts
+        expr: rate(proxilion_prompt_injection_detections_total[5m]) > 5
+        for: 5m
+        labels:
+          severity: critical
+          component: security
+        annotations:
+          summary: "Prompt injection attempts detected"
+          description: "{{ $value | humanize }} prompt injection attempts/sec"
+          runbook_url: "https://docs.proxilion.dev/runbooks/prompt-injection"
+
+      # Toxicity spike
+      - alert: ToxicitySpike
+        expr: rate(proxilion_toxicity_detections_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          component: security
+        annotations:
+          summary: "Spike in toxic content detections"
+          description: "Toxicity detection rate is {{ $value | humanize }}/sec"
+          runbook_url: "https://docs.proxilion.dev/runbooks/toxicity-spike"
+

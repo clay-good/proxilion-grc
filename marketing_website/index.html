@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Proxilion - Enterprise AI Security & Compliance Platform. Secure AI adoption across all devices with real-time PII detection and automatic blocking.">
+    <title>Proxilion - MITM Proxy for AI Governance</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg width='64' height='64' viewBox='0 0 64 64' fill='none' xmlns='http://www.w3.org/2000/svg'><path d='M20 12V52H32C40.8366 52 48 44.8366 48 36C48 27.1634 40.8366 20 32 20H20V12Z' fill='white'/></svg>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #000000;
+            --surface: #0a0a0a;
+            --surface-elevated: #141414;
+            --surface-hover: #1a1a1a;
+            --text: #ffffff;
+            --text-secondary: #808080;
+            --text-tertiary: #404040;
+            --accent: #ffffff;
+            --border: #1a1a1a;
+            --glow: rgba(255, 255, 255, 0.1);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                background-position: -1000px 0;
+            }
+            100% {
+                background-position: 1000px 0;
+            }
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.02) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 40px;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            padding: 120px 0 180px;
+            text-align: center;
+            position: relative;
+            animation: fadeInUp 1s ease-out;
+        }
+
+        .logo {
+            font-size: 5rem;
+            font-weight: 900;
+            letter-spacing: -0.05em;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #ffffff 0%, #666666 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            position: relative;
+            display: inline-block;
+        }
+
+        .logo::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+        }
+
+        .tagline {
+            font-size: 1.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 50px;
+            font-weight: 300;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .hero-description {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            max-width: 800px;
+            margin: 0 auto 60px;
+            line-height: 2;
+            font-weight: 300;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 24px 60px;
+            background: var(--accent);
+            color: var(--bg);
+            text-decoration: none;
+            border-radius: 0;
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid var(--accent);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .cta-button:hover::before {
+            left: 100%;
+        }
+
+        .cta-button:hover {
+            background: transparent;
+            color: var(--accent);
+            transform: translateY(-4px);
+            box-shadow: 0 10px 40px rgba(255, 255, 255, 0.1);
+        }
+
+        .section {
+            padding: 120px 0;
+            position: relative;
+        }
+
+        .section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+        }
+
+        .section-title {
+            font-size: 4rem;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: 900;
+            letter-spacing: -0.04em;
+            background: linear-gradient(135deg, #ffffff 0%, #808080 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 1.4rem;
+            margin-bottom: 80px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            font-weight: 300;
+            line-height: 1.8;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2px;
+            margin-top: 80px;
+            background: var(--border);
+        }
+
+        .feature-card {
+            background: var(--surface);
+            padding: 60px 40px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-card:hover {
+            background: var(--surface-elevated);
+            transform: translateY(-8px);
+        }
+
+        .feature-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--accent);
+            transform: scaleX(0);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .feature-card:hover::after {
+            transform: scaleX(1);
+        }
+
+        .feature-title {
+            font-size: 1.6rem;
+            margin-bottom: 20px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .feature-description {
+            color: var(--text-secondary);
+            line-height: 1.8;
+            font-size: 1.05rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2px;
+            margin: 80px 0;
+            background: var(--border);
+        }
+
+        .stat {
+            background: var(--surface);
+            padding: 60px 40px;
+            text-align: center;
+            transition: all 0.4s ease;
+            position: relative;
+        }
+
+        .stat::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+
+        .stat:hover::before {
+            opacity: 1;
+        }
+
+        .stat:hover {
+            background: var(--surface-elevated);
+        }
+
+        .stat-number {
+            font-size: 4rem;
+            font-weight: 900;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, var(--text) 0%, var(--text-secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.04em;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .install-steps {
+            max-width: 1000px;
+            margin: 80px auto;
+        }
+
+        .step {
+            background: var(--surface);
+            padding: 50px;
+            margin-bottom: 2px;
+            display: grid;
+            grid-template-columns: 80px 1fr;
+            gap: 40px;
+            align-items: start;
+            transition: all 0.4s ease;
+            position: relative;
+        }
+
+        .step::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--accent);
+            transform: scaleY(0);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .step:hover::before {
+            transform: scaleY(1);
+        }
+
+        .step:hover {
+            background: var(--surface-elevated);
+            transform: translateX(8px);
+        }
+
+        .step-number {
+            background: var(--accent);
+            color: var(--bg);
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 2rem;
+            letter-spacing: -0.02em;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-title {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .step-description {
+            color: var(--text-secondary);
+            margin-bottom: 25px;
+            font-size: 1.1rem;
+        }
+
+        .code-block {
+            background: var(--bg);
+            padding: 25px 30px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.95rem;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            line-height: 1.8;
+        }
+
+        .use-cases {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2px;
+            margin-top: 80px;
+            background: var(--border);
+        }
+
+        .use-case {
+            background: var(--surface);
+            padding: 60px 40px;
+            text-align: center;
+            transition: all 0.4s ease;
+            position: relative;
+        }
+
+        .use-case::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, transparent 100%);
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+
+        .use-case:hover::before {
+            opacity: 1;
+        }
+
+        .use-case:hover {
+            background: var(--surface-elevated);
+        }
+
+        .use-case-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            letter-spacing: -0.02em;
+        }
+
+        .use-case-description {
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+            line-height: 1.6;
+        }
+
+        footer {
+            padding: 80px 0;
+            text-align: center;
+            margin-top: 120px;
+            position: relative;
+        }
+
+        footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+        }
+
+        .github-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 15px;
+            padding: 24px 50px;
+            background: var(--surface);
+            border: 2px solid var(--border);
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-top: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .github-link::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--accent);
+            transform: translateY(100%);
+            transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .github-link:hover::before {
+            transform: translateY(0);
+        }
+
+        .github-link:hover {
+            border-color: var(--accent);
+            transform: translateY(-4px);
+            color: var(--bg);
+        }
+
+        .github-link span {
+            position: relative;
+            z-index: 1;
+        }
+
+        @media (max-width: 1200px) {
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 20px;
+            }
+
+            header {
+                padding: 80px 0 120px;
+            }
+
+            .logo {
+                font-size: 3rem;
+            }
+
+            .tagline {
+                font-size: 1.2rem;
+            }
+
+            .hero-description {
+                font-size: 1.1rem;
+            }
+
+            .section-title {
+                font-size: 2.5rem;
+            }
+
+            .section-subtitle {
+                font-size: 1.1rem;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .use-cases {
+                grid-template-columns: 1fr;
+            }
+
+            .step {
+                grid-template-columns: 1fr;
+                padding: 30px;
+            }
+
+            .step-number {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5rem;
+            }
+
+            .section {
+                padding: 80px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">Proxilion</div>
+            <div class="tagline">AI Security & Compliance</div>
+            <p class="hero-description">
+                The open-source platform that secures AI adoption across mobile, browser, and API. 
+                Automatically detect and block sensitive data before it reaches AI providers. Deploy in minutes, comply with 23+ regulations, protect your enterprise.
+            </p>
+            <a href="#install" class="cta-button">Get Started in 5 Minutes</a>
+        </header>
+
+        <section class="section">
+            <div class="stats-grid">
+                <div class="stat">
+                    <div class="stat-number">&lt;10ms</div>
+                    <div class="stat-label">Latency Overhead</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">30+</div>
+                    <div class="stat-label">PII Patterns Detected</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">23+</div>
+                    <div class="stat-label">Compliance Standards</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">98.5%</div>
+                    <div class="stat-label">Test Coverage</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">Why Proxilion?</h2>
+            <p class="section-subtitle">
+                AI tools like ChatGPT and Claude are powerful but they're also a compliance nightmare. 
+                Proxilion sits between your users and AI providers, securing every request in real-time.
+            </p>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h3 class="feature-title">Real-Time Protection</h3>
+                    <p class="feature-description">
+                        Automatically detect and block PII, PHI, credit cards, SSNs, and 30+ sensitive data patterns 
+                        before they reach AI providers. No data leaks, ever.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <h3 class="feature-title">Universal Device Coverage</h3>
+                    <p class="feature-description">
+                        Secure AI usage on mobile (via MDM), browsers (via DNS), and APIs (via proxy). 
+                        One platform, every device, complete control.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <h3 class="feature-title">Lightning Fast</h3>
+                    <p class="feature-description">
+                        Sub-10ms latency with 85-95% cache hit rate. Parallel scanning, early termination, 
+                        and connection pooling ensure zero user friction.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <h3 class="feature-title">23+ Compliance Standards</h3>
+                    <p class="feature-description">
+                        HIPAA, PCI-DSS, GDPR, CCPA, SOC 2, ISO 27001, and more. Automated compliance 
+                        scanning with detailed audit trails for every request.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <h3 class="feature-title">Self-Service Management</h3>
+                    <p class="feature-description">
+                        Customize detection patterns, adjust severity levels, and manage policies through 
+                        an intuitive web UI. No code changes required.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <h3 class="feature-title">Deploy Anywhere</h3>
+                    <p class="feature-description">
+                        Cloudflare Workers (300+ global locations), self-hosted, Docker, Kubernetes. 
+                        Deploy in 15 minutes with automated scripts.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2 class="section-title">Perfect For</h2>
+            <div class="use-cases">
+                <div class="use-case">
+                    <div class="use-case-title">Healthcare</div>
+                    <div class="use-case-description">HIPAA-compliant AI usage with PHI protection</div>
+                </div>
+                <div class="use-case">
+                    <div class="use-case-title">Financial Services</div>
+                    <div class="use-case-description">PCI-DSS compliance for payment data</div>
+                </div>
+                <div class="use-case">
+                    <div class="use-case-title">Enterprise</div>
+                    <div class="use-case-description">Multi-tenant security for large organizations</div>
+                </div>
+                <div class="use-case">
+                    <div class="use-case-title">Startups</div>
+                    <div class="use-case-description">Fast deployment with zero infrastructure</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" id="install">
+            <h2 class="section-title">Get Started in 3 Steps</h2>
+            <p class="section-subtitle">Deploy Proxilion in under 5 minutes. No complex setup, no hidden costs.</p>
+
+            <div class="install-steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <div class="step-title">Clone & Install</div>
+                        <p class="step-description">Get the code and install dependencies</p>
+                        <div class="code-block">git clone https://github.com/clay-good/proxilion.git<br>cd proxilion<br>npm install</div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <div class="step-title">Build & Start</div>
+                        <p class="step-description">Build the project and start the proxy server</p>
+                        <div class="code-block">npm run build<br>npm start</div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <div class="step-title">Configure & Deploy</div>
+                        <p class="step-description">Set up your environment and deploy to production</p>
+                        <div class="code-block">cp .env.example .env<br># Edit .env with your settings<br>npm run deploy:production</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 80px;">
+                <p style="color: var(--text-secondary); margin-bottom: 30px; font-size: 1.3rem; font-weight: 300;">
+                    Ready to secure your AI adoption?
+                </p>
+                <a href="https://github.com/clay-good/proxilion" class="github-link" target="_blank" rel="noopener">
+                    <span>Use it on GitHub today</span>
+                </a>
+            </div>
+        </section>
+
+    </div>
+</body>
+</html>
