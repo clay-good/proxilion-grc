@@ -15,10 +15,10 @@ Proxilion is a production-ready security platform that enables safe AI adoption 
 
 ## Quick Links
 
-- **[QUICKSTART - Get Running in 5 Minutes](QUICKSTART.md)** - **START HERE**
-- **[Complete Documentation Index](DOCUMENTATION.md)**
-- **[Configuration Reference](.env.example)**
-- **[Cloudflare Deployment Guide](docs/CLOUDFLARE_DEPLOYMENT.md)**
+- **[📖 Complete Setup Guide](SETUP.md)** - **START HERE** - Deployment, DNS, MDM, certificates
+- **[🌐 Marketing Site](marketing_website/index.html)** - Visual overview and setup instructions
+- **[⚙️ Configuration Reference](.env.example)** - Environment variables
+- **[🏗️ Architecture Guide](docs/ARCHITECTURE.md)** - Technical deep dive
 
 ---
 
@@ -222,209 +222,97 @@ Proxilion provides a **unified security layer** that intercepts and controls all
 
 ## 🚀 Quick Start
 
-### Option 1: Cloudflare Workers (Recommended)
-
-**Best for**: Global enterprises, zero infrastructure management, auto-scaling
+### 5-Minute Setup
 
 ```bash
-# 1. Clone repository
+# Clone and install
 git clone https://github.com/proxilion/proxilion.git
 cd proxilion
-
-# 2. Install dependencies
 npm install
 
-# 3. Install Wrangler CLI
-npm install -g wrangler
+# Build and start
+npm run build
+npm start
 
-# 4. Login to Cloudflare
-wrangler login
-
-# 5. Deploy to Cloudflare Workers
-npm run deploy:cloudflare
-
-# 6. Configure DNS (point AI domains to your worker)
-# See docs/CLOUDFLARE_DEPLOYMENT.md for details
-
-# 7. Configure MDM for mobile devices
-# See docs/MDM_CONFIGURATION.md for details
-
-# 8. Distribute CA certificate to all devices
-# See docs/CERTIFICATE_INSTALLATION.md for details
-
-# ✅ Done! All AI traffic now secured across mobile, browser, and API
+# Access admin dashboard
+open http://localhost:8788
 ```
 
-**Benefits**:
-- 🌍 Global edge network (300+ locations)
-- 📈 Auto-scaling (0 to millions of requests)
-- ⚡ <10ms latency overhead
-- 💰 Cost-effective ($15/month for 1M requests/day)
-- 🔒 99.99% uptime SLA
+### Production Deployment
 
-### Option 2: Self-Hosted (On-Premises)
+**Choose your deployment method:**
 
-**Best for**: Regulated industries, air-gapped environments, data sovereignty
+| Method | Best For | Setup Time |
+|--------|----------|------------|
+| **[Cloudflare Workers](SETUP.md#option-1-cloudflare-workers-recommended)** | Global enterprises, zero infrastructure | 5 minutes |
+| **[Self-Hosted](SETUP.md#option-2-self-hosted-on-premises)** | Regulated industries, data sovereignty | 10 minutes |
+| **[Docker/Kubernetes](SETUP.md#option-3-docker)** | Containerized environments | 5 minutes |
 
-```bash
-# 1. Clone repository
-git clone https://github.com/proxilion/proxilion.git
-cd proxilion
+**📖 See [SETUP.md](SETUP.md) for complete deployment instructions including:**
+- DNS configuration (BIND, Windows DNS, Pi-hole, Cloudflare Gateway)
+- MDM setup (Intune, Jamf, Workspace ONE)
+- Certificate installation (Windows, macOS, Linux, iOS, Android)
+- VPN integration (OpenVPN, WireGuard)
+- Troubleshooting and verification
 
-# 2. Run automated deployment
-sudo bash scripts/deploy-enterprise.sh
+## 📖 How It Works
 
-# The script will:
-# • Install dependencies (Node.js, OpenSSL, DNS tools)
-# • Create service user and directories
-# • Build the application
-# • Generate MITM certificates
-# • Configure systemd service
-# • Set up firewall rules
-# • Configure log rotation
-
-# 3. Configure DNS
-# See docs/DNS_CONFIGURATION.md
-
-# 4. Configure MDM
-# See docs/MDM_CONFIGURATION.md
-
-# 5. Distribute certificates
-# See docs/CERTIFICATE_INSTALLATION.md
-
-# ✅ Done! Proxilion running on your infrastructure
-```
-
-### Prerequisites
-
-- **For Cloudflare**: Cloudflare account, domain managed by Cloudflare
-- **For Self-Hosted**: Linux server (Ubuntu 20.04+, Debian 11+, RHEL 8+), Node.js 18+
-- **For Both**: MDM system (Intune, Jamf, Workspace ONE, etc.), Corporate DNS control
-
-## 📖 How It Works: Complete Flow
-
-### Mobile Device (iOS/Android)
+Proxilion sits between your users and AI providers, inspecting every request in real-time:
 
 ```
-1. IT Admin deploys MDM profile
-   ↓
-2. Device receives proxy config (proxilion.company.com:8787)
-   ↓
-3. Device receives CA certificate (auto-trusted)
-   ↓
-4. User opens ChatGPT app/browser
-   ↓
-5. All HTTPS traffic routes through Proxilion
-   ↓
-6. Proxilion inspects request content
-   ↓
-7. PII detected? → BLOCK + notify user
-   ↓
-8. No PII? → Forward to ChatGPT
-   ↓
-9. Response flows back through Proxilion
-   ↓
-10. Audit log created for compliance
+┌─────────────────────────────────────────────────────────────┐
+│  User Device (Mobile/Browser/API)                           │
+│         ↓                                                    │
+│  ┌──────────────────────────────────────────────────┐       │
+│  │         Proxilion Security Layer                 │       │
+│  │  • Intercept (DNS/MDM/VPN)                      │       │
+│  │  • Inspect (30+ PII patterns)                   │       │
+│  │  • Enforce (23+ compliance rules)               │       │
+│  │  • Audit (complete logs)                        │       │
+│  └──────────────────────────────────────────────────┘       │
+│         ↓                                                    │
+│  AI Provider (ChatGPT/Claude/Gemini)                        │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-### Browser (Desktop/Laptop)
+### Real-World Example: Healthcare
+
+**Scenario**: Doctor tries to send patient data to ChatGPT
 
 ```
-1. IT Admin configures corporate DNS
-   ↓
-2. DNS: chat.openai.com → Proxilion IP
-   ↓
-3. IT Admin distributes CA certificate (Group Policy/MDM)
-   ↓
-4. User navigates to chat.openai.com
-   ↓
-5. DNS resolves to Proxilion
-   ↓
-6. Proxilion presents valid certificate (trusted by browser)
-   ↓
-7. User types: "Analyze SSN 123-45-6789"
-   ↓
-8. Proxilion detects SSN pattern
-   ↓
-9. Request BLOCKED
-   ↓
-10. User sees: "Request blocked: SSN detected"
-   ↓
-11. Audit event logged
-```
+Doctor types: "Patient John Doe, MBI 1EG4-TE5-MK73, presents with..."
 
-### API/Programmatic Access
+↓ Proxilion detects:
+  • Patient name (PHI)
+  • Medicare Beneficiary Identifier (MBI)
+  • HIPAA violation
 
-```
-1. Developer installs Proxilion SDK
-   ↓
-2. Or sets environment variable: OPENAI_API_BASE=https://proxilion.company.com
-   ↓
-3. Application makes API call
-   ↓
-4. Request routes to Proxilion
-   ↓
-5. Proxilion authenticates API key
-   ↓
-6. Content inspection (same PII/compliance rules)
-   ↓
-7. Policy enforcement (block/redact/allow)
-   ↓
-8. If allowed, forward to OpenAI with org API key
-   ↓
-9. Response returned to application
-   ↓
-10. Complete audit trail maintained
-```
+↓ Request BLOCKED
 
-### Real-World Example: Healthcare Organization
+Doctor sees: "⚠️ Request blocked: Protected Health Information (PHI) detected"
 
-**Scenario**: Doctor wants to use ChatGPT to summarize patient notes
-
-```
-Doctor (iPhone) types in ChatGPT:
-"Patient John Doe, MBI 1EG4-TE5-MK73, presents with..."
-
-↓ [MDM-enforced proxy routes to Proxilion]
-
-Proxilion detects:
-• Patient name (PHI)
-• Medicare Beneficiary Identifier (MBI)
-• HIPAA violation
-
-↓ [Request BLOCKED]
-
-Doctor sees:
-"⚠️ Request blocked: Protected Health Information (PHI) detected
-• Medicare Beneficiary Identifier (MBI)
-• Patient name
-This violates HIPAA regulations. Please remove PHI before submitting."
-
-↓ [Audit log created]
-
-Compliance officer sees in dashboard:
-• User: dr.smith@hospital.com
-• Device: iPhone 14 Pro
-• Threat: HIPAA violation (MBI detected)
-• Action: Blocked
-• Timestamp: 2025-10-21 14:32:15
+↓ Compliance officer sees in dashboard:
+  • User: dr.smith@hospital.com
+  • Threat: HIPAA violation
+  • Action: Blocked
+  • Timestamp: 2025-10-21 14:32:15
 ```
 
 **Result**: Zero PHI exposure, complete HIPAA compliance, doctor can still use AI safely
 
+**📖 See [SETUP.md](SETUP.md) for detailed deployment flows for mobile, browser, and API access.**
+
 ## 📚 Documentation
 
-### Complete Solution Guides
+### Essential Guides
 
-| Guide | Description | Link |
-|-------|-------------|------|
-| **Complete Solution Guide** | Comprehensive overview of how Proxilion solves AI compliance across all devices | [docs/COMPLETE_SOLUTION_GUIDE.md](docs/COMPLETE_SOLUTION_GUIDE.md) |
-| **Cloudflare Deployment** | Deploy to Cloudflare Workers for global edge network | [docs/CLOUDFLARE_DEPLOYMENT.md](docs/CLOUDFLARE_DEPLOYMENT.md) |
-| **MDM Configuration** | Configure mobile devices (iOS/Android) via Intune, Jamf, Workspace ONE | [docs/MDM_CONFIGURATION.md](docs/MDM_CONFIGURATION.md) |
-| **DNS Configuration** | Set up DNS override for browser-based interception | [docs/DNS_CONFIGURATION.md](docs/DNS_CONFIGURATION.md) |
-| **Certificate Installation** | Distribute CA certificates to all devices and platforms | [docs/CERTIFICATE_INSTALLATION.md](docs/CERTIFICATE_INSTALLATION.md) |
-| **Architecture** | Technical architecture and system design | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) |
-| **Deployment** | Production deployment best practices | [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) |
+| Guide | Description |
+|-------|-------------|
+| **[Setup Guide](SETUP.md)** | Complete deployment guide: Cloudflare Workers, self-hosted, Docker, DNS, MDM, certificates |
+| **[Architecture](docs/ARCHITECTURE.md)** | Technical architecture, components, and design decisions |
+| **[Advanced Features](docs/ADVANCED_FEATURES.md)** | Cost tracking, analytics, multi-tenancy, custom scanners |
+| **[Performance Optimization](docs/PERFORMANCE_OPTIMIZATION.md)** | Tuning, caching, benchmarks, and best practices |
+| **[GraphQL API](docs/GRAPHQL_API.md)** | API documentation for programmatic access |
 
 ### Architecture Overview
 
@@ -512,138 +400,51 @@ Modern, responsive admin dashboard:
 
 ### Configuration
 
-#### Environment Variables
+See [.env.example](.env.example) for all configuration options.
 
-```bash
-# Server Configuration
-PORT=8787
-NODE_ENV=production
-LOG_LEVEL=info
+**Key settings:**
+- `PORT=8787` - Proxy server port
+- `ADMIN_PORT=8788` - Admin dashboard port
+- `CA_CERT_PATH` - Path to CA certificate
+- `DATABASE_URL` - Optional database connection
+- `SIEM_ENDPOINT` - Optional SIEM integration
 
-# Certificate Paths
-CA_CERT_PATH=/etc/proxilion/certs/ca.crt
-CA_KEY_PATH=/etc/proxilion/certs/ca.key
-
-# Database (optional)
-DATABASE_URL=postgresql://user:pass@localhost:5432/proxilion
-
-# SIEM Integration (optional)
-SIEM_ENDPOINT=https://siem.example.com/events
-SIEM_API_KEY=your-api-key
-```
-
-#### Configuration File (`config/production.json`)
-
-```json
-{
-  "proxy": {
-    "port": 8787,
-    "adminPort": 8788,
-    "timeout": 30000,
-    "maxRequestSize": 10485760
-  },
-  "security": {
-    "enablePiiDetection": true,
-    "enableComplianceValidation": true,
-    "enableDlp": true,
-    "blockOnCritical": true,
-    "alertOnHigh": true
-  },
-  "compliance": {
-    "standards": ["HIPAA", "PCI_DSS", "GDPR", "CCPA"],
-    "auditRetentionDays": 365
-  },
-  "certificates": {
-    "caCommonName": "Proxilion Root CA",
-    "certValidityDays": 365,
-    "rotationDays": 90
-  }
-}
-```
+**📖 See [SETUP.md](SETUP.md) for detailed configuration instructions.**
 
 ### Usage Examples
 
-#### Example 1: Configure PII Detection via Web UI
+**Access the admin dashboard:** `http://your-server:8788`
 
-1. Navigate to `http://your-server:8788/security`
-2. Enable/disable PII patterns by category (Financial, Identity, Contact, Health)
-3. Test patterns with sample text
-4. Save configuration
+- **Security Controls** (`/security`) - Configure PII patterns and detection rules
+- **Policy Management** (`/policies`) - Create and manage security policies
+- **Live Monitor** (`/monitor`) - View real-time blocked requests and alerts
+- **Compliance Reports** (`/reports`) - Generate audit reports for compliance
 
-#### Example 2: Create Security Policy via Web UI
-
-1. Navigate to `http://your-server:8788/policies`
-2. Click "Create Policy"
-3. Set conditions (e.g., "Threat Level = CRITICAL")
-4. Set actions (e.g., "Block Request")
-5. Set priority and enable policy
-
-#### Example 3: Monitor Real-Time Activity
-
-1. Navigate to `http://your-server:8788/monitor`
-2. View live blocked requests
-3. See security alerts with severity levels
-4. Track active users and PII detections
-
-#### Example 4: Generate Compliance Report
-
-1. Navigate to `http://your-server:8788/reports`
-2. Select report type (Compliance, Security, Executive)
-3. Choose time range (7d, 30d, 90d)
-4. View compliance scores by standard
-5. Export report for auditors
+**📖 See [SETUP.md](SETUP.md) for detailed usage instructions and examples.**
 
 ## 🔧 Advanced Configuration
 
 ### Custom PII Patterns
 
-Add custom PII detection patterns via API:
+Add organization-specific patterns via API or Web UI:
 
 ```bash
 curl -X POST http://localhost:8788/api/patterns \
   -H "Content-Type: application/json" \
-  -d '{
-    "id": "custom-employee-id",
-    "name": "Employee ID",
-    "category": "identity",
-    "pattern": "EMP-[0-9]{6}",
-    "severity": "HIGH",
-    "enabled": true
-  }'
-```
-
-### Custom Compliance Rules
-
-Add organization-specific compliance rules:
-
-```bash
-curl -X POST http://localhost:8788/api/compliance/rules \
-  -H "Content-Type: application/json" \
-  -d '{
-    "id": "org-data-policy",
-    "standard": "INTERNAL",
-    "name": "Internal Data Policy",
-    "description": "Block proprietary project names",
-    "pattern": "(Project Alpha|Project Beta)",
-    "severity": "CRITICAL"
-  }'
+  -d '{"id": "custom-employee-id", "pattern": "EMP-[0-9]{6}", "severity": "HIGH"}'
 ```
 
 ### SIEM Integration
 
-Forward audit events to external SIEM:
+Forward audit events to Splunk, Datadog, or any SIEM:
 
 ```bash
 curl -X POST http://localhost:8788/api/integrations/siem \
   -H "Content-Type: application/json" \
-  -d '{
-    "endpoint": "https://siem.example.com/events",
-    "apiKey": "your-api-key",
-    "format": "json",
-    "batchSize": 100,
-    "flushInterval": 60000
-  }'
+  -d '{"endpoint": "https://siem.example.com/events", "apiKey": "your-key"}'
 ```
+
+**📖 See [docs/ADVANCED_FEATURES.md](docs/ADVANCED_FEATURES.md) for more advanced configuration options.**
 
 ## 🧪 Testing
 
@@ -676,72 +477,31 @@ Tests: 773 passed (785 total)
 Duration: ~8.6s
 ```
 
-## 📦 Deployment
+## 📦 Production Deployment
 
-### Production Deployment Checklist
+### Quick Checklist
 
-- [ ] Run automated deployment script (`scripts/deploy-enterprise.sh`)
-- [ ] Configure DNS to route AI domains to Proxilion
-- [ ] Distribute CA certificate to all client devices
-- [ ] Configure firewall rules (ports 8787, 8788)
-- [ ] Set up log rotation and monitoring
-- [ ] Configure SIEM integration (optional)
-- [ ] Test certificate trust on sample devices
-- [ ] Verify DNS resolution for AI domains
-- [ ] Test blocking with sample PII data
-- [ ] Review audit logs and compliance reports
+- [ ] Deploy Proxilion (Cloudflare Workers or self-hosted)
+- [ ] Configure DNS/Gateway to route AI domains
+- [ ] Distribute CA certificate to all devices
+- [ ] Configure MDM for mobile devices (optional)
+- [ ] Test with sample PII data
+- [ ] Monitor dashboard for blocked requests
 
-### Systemd Service Management
+**📖 See [SETUP.md](SETUP.md) for detailed deployment checklist and verification steps.**
+
+### Service Management (Self-Hosted)
 
 ```bash
-# Start service
+# Start/stop/restart
 sudo systemctl start proxilion
-
-# Stop service
 sudo systemctl stop proxilion
-
-# Restart service
 sudo systemctl restart proxilion
 
-# View status
+# View status and logs
 sudo systemctl status proxilion
-
-# View logs
 sudo journalctl -u proxilion -f
 ```
-
-### Certificate Rotation
-
-```bash
-# Rotate certificates via API
-curl -X POST http://localhost:8788/api/certificates/rotate
-
-# Or manually
-sudo systemctl stop proxilion
-sudo rm /etc/proxilion/certs/*
-sudo -u proxilion node /opt/proxilion/dist/index.js --generate-certs
-sudo systemctl start proxilion
-```
-
-## 📖 Documentation
-
-### Complete Documentation
-
-- **[DNS Configuration](docs/DNS_CONFIGURATION.md)**: Configure DNS to route AI traffic through Proxilion
-- **[Certificate Installation](docs/CERTIFICATE_INSTALLATION.md)**: Install CA certificates on all platforms
-- **[Deployment Guide](docs/DEPLOYMENT.md)**: Detailed deployment instructions
-- **[Architecture](docs/ARCHITECTURE.md)**: System architecture and design decisions
-- **[API Reference](docs/API.md)**: Complete API documentation
-
-### Key Documentation Files
-
-| Document | Description |
-|----------|-------------|
-| `docs/DNS_CONFIGURATION.md` | DNS setup for BIND, dnsmasq, Pi-hole, Windows DNS |
-| `docs/CERTIFICATE_INSTALLATION.md` | Certificate installation for Windows, macOS, Linux, iOS, Android |
-| `docs/TRANSPARENT_PROXY_SETUP.md` | Transparent proxy configuration |
-| `docs/DEPLOYMENT.md` | Production deployment guide |
-| `docs/ARCHITECTURE.md` | System architecture overview |
 
 ## 🤝 Contributing
 

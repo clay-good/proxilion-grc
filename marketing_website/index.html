@@ -631,7 +631,7 @@
                     <h3 class="feature-title">Real-Time Protection</h3>
                     <p class="feature-description">
                         Automatically detect and block PII, PHI, credit cards, SSNs, and 30+ sensitive data patterns 
-                        before they reach AI providers. No data leaks, ever.
+                        before they reach AI providers.
                     </p>
                 </div>
 
@@ -700,36 +700,172 @@
         </section>
 
         <section class="section" id="install">
-            <h2 class="section-title">Get Started in 3 Steps</h2>
-            <p class="section-subtitle">Deploy Proxilion in under 5 minutes. No complex setup, no hidden costs.</p>
+            <h2 class="section-title">Deployment Options</h2>
+            <p class="section-subtitle">Choose the deployment method that fits your infrastructure. All options provide the same security features.</p>
+
+            <div class="features-grid" style="margin-bottom: 80px;">
+                <div class="feature-card">
+                    <h3 class="feature-title">☁️ Cloudflare Workers</h3>
+                    <p class="feature-description">
+                        <strong>Recommended for most organizations</strong><br><br>
+                        • 300+ global edge locations<br>
+                        • Auto-scaling to millions of requests<br>
+                        • &lt;10ms latency overhead<br>
+                        • $15/month for 1M requests/day<br>
+                        • Zero infrastructure management
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <h3 class="feature-title">🏢 Self-Hosted</h3>
+                    <p class="feature-description">
+                        <strong>For regulated industries</strong><br><br>
+                        • Complete data sovereignty<br>
+                        • Air-gapped deployment support<br>
+                        • On-premises or private cloud<br>
+                        • Full control over infrastructure<br>
+                        • Automated deployment scripts
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <h3 class="feature-title">🐳 Docker/Kubernetes</h3>
+                    <p class="feature-description">
+                        <strong>For containerized environments</strong><br><br>
+                        • Easy scaling with orchestration<br>
+                        • Fits existing DevOps workflows<br>
+                        • Helm charts included<br>
+                        • Multi-region deployment<br>
+                        • Health checks & auto-restart
+                    </p>
+                </div>
+            </div>
+
+            <h2 class="section-title" style="margin-top: 120px;">Quick Start: Cloudflare Workers</h2>
+            <p class="section-subtitle">Deploy globally in 5 minutes with Cloudflare's edge network</p>
 
             <div class="install-steps">
                 <div class="step">
                     <div class="step-number">1</div>
                     <div class="step-content">
-                        <div class="step-title">Clone & Install</div>
-                        <p class="step-description">Get the code and install dependencies</p>
-                        <div class="code-block">git clone https://github.com/clay-good/proxilion.git<br>cd proxilion<br>npm install</div>
+                        <div class="step-title">Install & Deploy</div>
+                        <p class="step-description">Clone the repo and deploy to Cloudflare Workers</p>
+                        <div class="code-block">git clone https://github.com/clay-good/proxilion.git<br>cd proxilion<br>npm install<br>npm install -g wrangler<br>wrangler login<br>npm run deploy:cloudflare</div>
                     </div>
                 </div>
 
                 <div class="step">
                     <div class="step-number">2</div>
                     <div class="step-content">
-                        <div class="step-title">Build & Start</div>
-                        <p class="step-description">Build the project and start the proxy server</p>
-                        <div class="code-block">npm run build<br>npm start</div>
+                        <div class="step-title">Configure Cloudflare Gateway</div>
+                        <p class="step-description">Route AI traffic through your Worker using Cloudflare Zero Trust</p>
+                        <div class="code-block"># In Cloudflare Zero Trust Dashboard:<br># 1. Go to Gateway → HTTP Policies<br># 2. Create policy: "Route AI Traffic"<br># 3. Add domains: chat.openai.com, claude.ai, gemini.google.com<br># 4. Action: Override destination → your-worker.workers.dev<br># 5. Deploy WARP client to devices</div>
                     </div>
                 </div>
 
                 <div class="step">
                     <div class="step-number">3</div>
                     <div class="step-content">
-                        <div class="step-title">Configure & Deploy</div>
-                        <p class="step-description">Set up your environment and deploy to production</p>
-                        <div class="code-block">cp .env.example .env<br># Edit .env with your settings<br>npm run deploy:production</div>
+                        <div class="step-title">Deploy Certificates & Test</div>
+                        <p class="step-description">Install CA certificate on devices and verify traffic interception</p>
+                        <div class="code-block"># Download CA certificate from dashboard<br>curl https://your-worker.workers.dev/api/certificates/ca/download<br><br># Deploy via MDM (Intune/Jamf/Workspace ONE)<br># Or install manually on test devices<br><br># Test: Try sending PII to ChatGPT - should be blocked!</div>
                     </div>
                 </div>
+            </div>
+
+            <h2 class="section-title" style="margin-top: 120px;">Quick Start: Self-Hosted</h2>
+            <p class="section-subtitle">Deploy on your own infrastructure in 5 minutes</p>
+
+            <div class="install-steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <div class="step-title">Automated Deployment</div>
+                        <p class="step-description">Run the deployment script - it handles everything automatically</p>
+                        <div class="code-block">git clone https://github.com/clay-good/proxilion.git<br>cd proxilion<br>sudo bash scripts/deploy-enterprise.sh<br><br># Script installs dependencies, builds app,<br># generates certificates, configures systemd,<br># sets up firewall, and starts service</div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <div class="step-title">Configure DNS</div>
+                        <p class="step-description">Route AI domains to your Proxilion server</p>
+                        <div class="code-block"># Option 1: Internal DNS (BIND/Windows DNS/dnsmasq)<br>chat.openai.com    A    192.168.1.100<br>claude.ai          A    192.168.1.100<br>gemini.google.com  A    192.168.1.100<br><br># Option 2: VPN DNS Override<br># Configure your VPN to push DNS server<br><br># Option 3: Pi-hole<br># Add entries to /etc/pihole/custom.list</div>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <div class="step-title">Deploy to Devices</div>
+                        <p class="step-description">Configure mobile devices via MDM and install certificates</p>
+                        <div class="code-block"># Mobile (via MDM):<br># - Deploy proxy config: proxilion.company.com:8787<br># - Deploy CA certificate as trusted root<br><br># Desktop (via Group Policy/Script):<br># - Set system proxy: proxilion.company.com:8787<br># - Install CA certificate to trusted root store<br><br># Verify: http://proxilion-server:8788/dashboard</div>
+                    </div>
+                </div>
+            </div>
+
+            <h2 class="section-title" style="margin-top: 120px;">Network Configuration Options</h2>
+            <p class="section-subtitle">Multiple ways to route traffic through Proxilion - choose what works for your infrastructure</p>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h3 class="feature-title">🌐 DNS Override</h3>
+                    <p class="feature-description">
+                        <strong>Best for: Browser-based access</strong><br><br>
+                        Configure your internal DNS server (BIND, Windows DNS, dnsmasq, Pi-hole) to resolve AI domains to your Proxilion server. Transparent to users, works with all browsers.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <h3 class="feature-title">🔒 Cloudflare Gateway</h3>
+                    <p class="feature-description">
+                        <strong>Best for: Cloud-first organizations</strong><br><br>
+                        Use Cloudflare Zero Trust Gateway to route traffic through your Worker. Deploy WARP client or use DNS filtering. Includes DLP, malware scanning, and access controls.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <h3 class="feature-title">🛡️ VPN Integration</h3>
+                    <p class="feature-description">
+                        <strong>Best for: Remote workforce</strong><br><br>
+                        Configure your VPN (OpenVPN, WireGuard, Cisco AnyConnect) to push DNS settings or route specific IPs through Proxilion. Works for all traffic from VPN clients.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <h3 class="feature-title">📱 MDM Proxy</h3>
+                    <p class="feature-description">
+                        <strong>Best for: Mobile devices</strong><br><br>
+                        Deploy proxy configuration via MDM (Intune, Jamf, Workspace ONE). Enforced at OS level, cannot be bypassed by users. Works with all apps and browsers.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <h3 class="feature-title">🔌 Transparent Proxy</h3>
+                    <p class="feature-description">
+                        <strong>Best for: Network-level enforcement</strong><br><br>
+                        Use iptables/nftables to redirect traffic at the network layer. No client configuration needed. Works with any device on the network.
+                    </p>
+                </div>
+
+                <div class="feature-card">
+                    <h3 class="feature-title">🔑 API Gateway</h3>
+                    <p class="feature-description">
+                        <strong>Best for: Programmatic access</strong><br><br>
+                        Set environment variable OPENAI_API_BASE to point to Proxilion. Or use Proxilion SDK for automatic routing. Same security policies as browser/mobile.
+                    </p>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 120px;">
+                <h2 class="section-title">Complete Setup Guide</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 40px; font-size: 1.2rem; font-weight: 300; max-width: 800px; margin-left: auto; margin-right: auto; line-height: 1.8;">
+                    For detailed instructions including certificate installation, MDM configuration, troubleshooting, and advanced features, see our comprehensive setup guide.
+                </p>
+                <a href="https://github.com/clay-good/proxilion/blob/main/SETUP.md" class="cta-button" target="_blank" rel="noopener">
+                    View Complete Setup Guide
+                </a>
             </div>
 
             <div style="text-align: center; margin-top: 80px;">
@@ -737,7 +873,7 @@
                     Ready to secure your AI adoption?
                 </p>
                 <a href="https://github.com/clay-good/proxilion" class="github-link" target="_blank" rel="noopener">
-                    <span>Use it on GitHub today</span>
+                    <span>⭐ Star on GitHub</span>
                 </a>
             </div>
         </section>
