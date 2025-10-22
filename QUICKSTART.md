@@ -427,15 +427,6 @@ SCAN_CACHE_TTL=300000
 
 ---
 
-## 💬 Get Help
-
-- **Documentation**: [docs/](docs/)
-- **GitHub Issues**: https://github.com/proxilion/proxilion/issues
-- **Community**: https://community.proxilion.dev
-- **Email**: support@proxilion.dev
-
----
-
 ## ✅ Quick Checklist
 
 - [ ] Cloned repository

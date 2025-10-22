@@ -539,10 +539,3 @@ curl -X POST http://localhost:8787/proxy/api.cohere.ai/v1/chat \
 2. Check minimum threat level
 3. Verify channel configuration
 4. Test alert channels manually
-
----
-
-## Support
-
-For enterprise support and custom integrations, contact: support@proxilion.dev
-

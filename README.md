@@ -541,10 +541,6 @@ git push origin feature/your-feature-name
 
 ## 🔒 Security
 
-### Reporting Security Issues
-
-Please report security vulnerabilities to **security@proxilion.dev**. Do not open public issues for security concerns.
-
 ### Security Best Practices
 
 1. **Certificate Security**: Protect CA private key with file permissions (600)

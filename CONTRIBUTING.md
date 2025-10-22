@@ -361,18 +361,3 @@ Releases are managed by maintainers:
 4. Push to GitHub
 5. GitHub Actions will build and publish
 
-## Getting Help
-
-- 💬 [Discord Community](https://discord.gg/proxilion)
-- 📧 Email: dev@proxilion.dev
-- 🐛 [GitHub Issues](https://github.com/proxilion/proxilion/issues)
-
-## Recognition
-
-Contributors will be recognized in:
-- README.md contributors section
-- Release notes
-- Project website
-
-Thank you for contributing to Proxilion! 🎉
-

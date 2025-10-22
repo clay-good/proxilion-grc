@@ -512,7 +512,6 @@ const connectionPool = new ConnectionPool({
 For performance issues:
 - **Documentation**: [Performance Optimization](PERFORMANCE_OPTIMIZATION.md)
 - **Metrics API**: `/api/performance/*`
-- **Support**: performance@proxilion.dev
 
 ---
 
