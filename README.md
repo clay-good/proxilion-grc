@@ -15,7 +15,7 @@ Proxilion is a production-ready security platform that enables safe AI adoption 
 
 ## Quick Links
 
-- **[📖 Complete Setup Guide](SETUP.md)** - **START HERE** - Deployment, DNS, MDM, certificates
+- **[📖 Complete Setup Guide](docs/SETUP.md)** - **START HERE** - Deployment, DNS, MDM, certificates
 - **[🌐 Marketing Site](marketing_website/index.html)** - Visual overview and setup instructions
 - **[⚙️ Configuration Reference](.env.example)** - Environment variables
 - **[🏗️ Architecture Guide](docs/ARCHITECTURE.md)** - Technical deep dive
@@ -568,27 +568,3 @@ git push origin feature/your-feature-name
 3. Configure appropriate timeout values
 4. Monitor memory usage and adjust Node.js heap size
 5. Use connection pooling for external integrations
-
-## 🗺️ Roadmap
-
-### Completed Features ✅
-
-- [x] MITM proxy with certificate management
-- [x] 30+ PII detection patterns with validators
-- [x] 23+ compliance standards (US federal, state, international)
-- [x] Web UI with 5 comprehensive pages
-- [x] Real-time monitoring with WebSocket
-- [x] Audit logging and compliance reporting
-- [x] Automated deployment scripts
-- [x] Complete documentation
-
-### Planned Features 🚧
-
-- [ ] Machine learning-based anomaly detection
-- [ ] Multi-tenancy support with tenant isolation
-- [ ] Advanced analytics with custom dashboards
-- [ ] Mobile app for monitoring and alerts
-- [ ] Browser extensions for direct integration
-- [ ] Cloud deployment templates (AWS, Azure, GCP)
-- [ ] API gateway mode for programmatic access
-- [ ] Advanced redaction with tokenization
