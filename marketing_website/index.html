@@ -3,14 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Proxilion - Free, open-source MITM proxy for AI security. Monitor and control every AI interaction in your organization.">
+    <meta name="description" content="Proxilion - Free, open-source MITM proxy for AI security. Monitor, block, and audit every AI interaction in your organization. Deploy in 5 minutes.">
     <title>Proxilion - Open Source AI Security Proxy</title>
+    
     <!-- Favicons -->
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-    <meta name="keywords" content="proxilion, ai security, mitm proxy, ai governance, pii detection, open source security, chatgpt security, claude security, ai monitoring, enterprise ai security">
+    
+    <!-- SEO Meta Tags -->
+    <meta name="keywords" content="proxilion, ai security, mitm proxy, ai governance, pii detection, open source security, chatgpt security, claude security, ai monitoring, enterprise ai security, llm security">
     <meta name="author" content="Clay Good">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://proxilion.com/">
@@ -30,28 +33,31 @@
     <meta property="twitter:title" content="Proxilion - Open Source AI Security Proxy">
     <meta property="twitter:description" content="Take control of AI in your organization. The open-source MITM proxy that monitors, blocks, and audits every AI interaction. Deploy in 5 minutes.">
     <meta property="twitter:image" content="https://proxilion.com/og-image.png">
+    
+    <!-- Structured Data -->
     <script type="application/ld+json">
     {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    "name": "Proxilion",
-    "applicationCategory": "SecurityApplication",
-    "operatingSystem": "Linux, Windows, macOS",
-    "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-    },
-    "description": "Open-source MITM proxy for AI security and governance. Monitor, block, and audit AI interactions across your organization.",
-    "url": "https://github.com/clay-good/proxilion",
-    "softwareVersion": "1.0",
-    "author": {
-        "@type": "Person",
-        "name": "Clay Good"
-    },
-    "license": "https://opensource.org/licenses/MIT"
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Proxilion",
+        "applicationCategory": "SecurityApplication",
+        "operatingSystem": "Linux, Windows, macOS",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "description": "Open-source MITM proxy for AI security and governance. Monitor, block, and audit AI interactions across your organization.",
+        "url": "https://github.com/clay-good/proxilion",
+        "softwareVersion": "1.0",
+        "author": {
+            "@type": "Person",
+            "name": "Clay Good"
+        },
+        "license": "https://opensource.org/licenses/MIT"
     }
     </script>
+    
     <style>
         * {
             margin: 0;
@@ -61,15 +67,27 @@
 
         :root {
             --bg: #000000;
+            --bg-secondary: #0a0a0a;
             --text: #ffffff;
             --text-muted: #999999;
             --accent: #ffffff;
             --border: #222222;
+            --shadow: rgba(255, 255, 255, 0.1);
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
+            from { opacity: 0; transform: translateY(30px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 20px rgba(255, 255, 255, 0.3); }
+            50% { text-shadow: 0 0 40px rgba(255, 255, 255, 0.5); }
         }
 
         body {
@@ -99,6 +117,7 @@
             position: relative;
         }
 
+        /* Hero Section */
         header {
             min-height: 100vh;
             display: flex;
@@ -107,35 +126,55 @@
             align-items: center;
             text-align: center;
             animation: fadeIn 1s ease-out;
+            position: relative;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            font-size: 0.8rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            margin-bottom: 35px;
+            font-weight: 600;
+            border-radius: 4px;
+        }
+
+        .logo-container {
+            margin-bottom: 40px;
+            animation: float 3s ease-in-out infinite;
         }
 
         .logo {
-            font-size: 7rem;
+            font-size: 8rem;
             font-weight: 900;
             letter-spacing: -0.05em;
-            margin-bottom: 40px;
             background: linear-gradient(180deg, #ffffff 0%, #666666 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            animation: glow 2s ease-in-out infinite;
         }
 
         .tagline {
-            font-size: 2rem;
-            font-weight: 300;
-            margin-bottom: 30px;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 25px;
             color: var(--text);
-            letter-spacing: -0.02em;
-            max-width: 800px;
+            letter-spacing: -0.03em;
+            max-width: 900px;
+            line-height: 1.2;
         }
 
         .subtitle {
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             color: var(--text-muted);
             margin-bottom: 60px;
-            max-width: 700px;
+            max-width: 750px;
             font-weight: 300;
-            line-height: 1.8;
+            line-height: 1.7;
         }
 
         .cta-group {
@@ -143,6 +182,7 @@
             gap: 20px;
             flex-wrap: wrap;
             justify-content: center;
+            margin-bottom: 50px;
         }
 
         .btn-primary {
@@ -153,16 +193,19 @@
             text-decoration: none;
             font-weight: 700;
             font-size: 1.1rem;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.03em;
             text-transform: uppercase;
             transition: all 0.3s ease;
             border: 2px solid var(--accent);
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1);
         }
 
         .btn-primary:hover {
             background: transparent;
             color: var(--accent);
-            transform: translateY(-2px);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(255, 255, 255, 0.2);
         }
 
         .btn-secondary {
@@ -173,152 +216,288 @@
             text-decoration: none;
             font-weight: 600;
             font-size: 1.1rem;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.03em;
             text-transform: uppercase;
             transition: all 0.3s ease;
             border: 2px solid var(--border);
+            border-radius: 8px;
         }
 
         .btn-secondary:hover {
             border-color: var(--text-muted);
             color: var(--text);
+            background: rgba(255, 255, 255, 0.02);
         }
 
-        .badge {
-            display: inline-block;
-            padding: 8px 16px;
-            background: rgba(255, 255, 255, 0.05);
+        .stats-banner {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 40px;
+            margin-top: 80px;
+            padding: 60px;
+            background: var(--bg-secondary);
             border: 1px solid var(--border);
-            font-size: 0.85rem;
-            letter-spacing: 0.1em;
+            border-radius: 16px;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 3.5rem;
+            font-weight: 900;
+            color: var(--accent);
+            letter-spacing: -0.03em;
+            margin-bottom: 8px;
+            background: linear-gradient(180deg, #ffffff 0%, #888888 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: var(--text-muted);
             text-transform: uppercase;
-            margin-bottom: 30px;
+            letter-spacing: 0.1em;
             font-weight: 600;
         }
 
+        /* Sections */
         section {
             padding: 120px 0;
             border-top: 1px solid var(--border);
         }
 
-        .section-title {
-            font-size: 3rem;
-            font-weight: 900;
-            letter-spacing: -0.03em;
+        .section-header {
             text-align: center;
             margin-bottom: 80px;
         }
 
+        .section-title {
+            font-size: 3.5rem;
+            font-weight: 900;
+            letter-spacing: -0.04em;
+            margin-bottom: 20px;
+            color: var(--text);
+        }
+
+        .section-subtitle {
+            font-size: 1.3rem;
+            color: var(--text-muted);
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Features Grid */
         .features {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 40px;
+            gap: 30px;
         }
 
         .feature {
-            padding: 40px;
+            padding: 45px;
             background: rgba(255, 255, 255, 0.02);
             border: 1px solid var(--border);
-            transition: all 0.3s ease;
+            border-radius: 16px;
+            transition: all 0.4s ease;
         }
 
         .feature:hover {
+            transform: translateY(-8px);
             background: rgba(255, 255, 255, 0.04);
             border-color: var(--text-muted);
-            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(255, 255, 255, 0.1);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            display: block;
         }
 
         .feature-title {
-            font-size: 1.5rem;
+            font-size: 1.6rem;
             font-weight: 700;
             margin-bottom: 15px;
             letter-spacing: -0.02em;
+            color: var(--text);
         }
 
         .feature-text {
-            color: var(--text-muted);
-            line-height: 1.8;
             font-size: 1.05rem;
-        }
-
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 60px;
-            text-align: center;
-            margin-top: 100px;
-        }
-
-        .stat-number {
-            font-size: 4rem;
-            font-weight: 900;
-            letter-spacing: -0.05em;
-            margin-bottom: 10px;
-        }
-
-        .stat-label {
             color: var(--text-muted);
-            font-size: 0.95rem;
-            text-transform: uppercase;
-            letter-spacing: 0.15em;
-            font-weight: 600;
+            line-height: 1.7;
         }
 
+        /* Use Cases */
         .use-cases {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 30px;
+            gap: 35px;
         }
 
         .use-case {
             padding: 50px;
             background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--border);
+            border-radius: 16px;
+            border: 2px solid var(--border);
+            transition: all 0.4s ease;
+        }
+
+        .use-case:hover {
+            border-color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.04);
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(255, 255, 255, 0.1);
         }
 
         .use-case-title {
             font-size: 1.8rem;
             font-weight: 700;
-            margin-bottom: 20px;
+            margin-bottom: 18px;
+            color: var(--text);
             letter-spacing: -0.02em;
         }
 
         .use-case-text {
+            font-size: 1.1rem;
             color: var(--text-muted);
             line-height: 1.8;
-            font-size: 1.05rem;
         }
 
+        /* AI Services Grid */
+        .ai-services {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+            margin-top: 50px;
+        }
+
+        .ai-service-card {
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .ai-service-card:hover {
+            background: var(--accent);
+            color: var(--bg);
+            transform: scale(1.05);
+            box-shadow: 0 8px 30px rgba(255, 255, 255, 0.2);
+        }
+
+        .ai-service-icon {
+            font-size: 2rem;
+            margin-bottom: 12px;
+        }
+
+        .ai-service-name {
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+
+        /* Deployment Options */
+        .deployment-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-top: 50px;
+        }
+
+        .deployment-card {
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .deployment-card:hover {
+            border-color: var(--accent);
+            background: rgba(255, 255, 255, 0.04);
+            transform: translateY(-5px);
+        }
+
+        .deployment-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+
+        .deployment-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--text);
+        }
+
+        .deployment-text {
+            font-size: 1rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* CTA Section */
         .final-cta {
             text-align: center;
-            padding: 140px 0;
+            padding: 120px 60px;
+            background: var(--accent);
+            color: var(--bg);
+            border-radius: 24px;
+            margin: 80px 0;
+            box-shadow: 0 20px 60px rgba(255, 255, 255, 0.15);
         }
 
         .final-cta h2 {
-            font-size: 4rem;
+            font-size: 3.5rem;
             font-weight: 900;
-            letter-spacing: -0.04em;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
+            letter-spacing: -0.03em;
         }
 
         .final-cta p {
-            font-size: 1.3rem;
-            color: var(--text-muted);
+            font-size: 1.4rem;
             margin-bottom: 50px;
-            font-weight: 300;
+            opacity: 0.9;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.6;
         }
 
+        .final-cta .btn-primary {
+            background: var(--bg);
+            color: var(--accent);
+            border-color: var(--bg);
+        }
+
+        .final-cta .btn-primary:hover {
+            background: transparent;
+            color: var(--bg);
+            border-color: var(--bg);
+        }
+
+        /* Footer */
         footer {
             text-align: center;
             padding: 60px 0;
-            border-top: 1px solid var(--border);
             color: var(--text-muted);
-            font-size: 0.9rem;
+            font-size: 1rem;
         }
 
         footer a {
-            color: var(--text);
+            color: var(--accent);
             text-decoration: none;
+            font-weight: 600;
             transition: opacity 0.3s ease;
         }
 
@@ -326,24 +505,28 @@
             opacity: 0.7;
         }
 
+        /* Responsive Design */
         @media (max-width: 1024px) {
             .features {
                 grid-template-columns: repeat(2, 1fr);
             }
 
-            .stats {
+            .stats-banner {
                 grid-template-columns: repeat(2, 1fr);
-                gap: 40px;
             }
 
-            .use-cases {
-                grid-template-columns: 1fr;
+            .ai-services {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .deployment-options {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
 
         @media (max-width: 768px) {
             .container {
-                padding: 0 30px;
+                padding: 0 25px;
             }
 
             .logo {
@@ -351,75 +534,69 @@
             }
 
             .tagline {
-                font-size: 1.5rem;
+                font-size: 1.8rem;
             }
 
             .subtitle {
-                font-size: 1rem;
+                font-size: 1.1rem;
             }
 
-            .cta-group {
-                flex-direction: column;
-                width: 100%;
+            .section-title {
+                font-size: 2.5rem;
+            }
+
+            .section-subtitle {
+                font-size: 1.1rem;
+            }
+
+            .features,
+            .use-cases {
+                grid-template-columns: 1fr;
+                gap: 25px;
+            }
+
+            .stats-banner {
+                grid-template-columns: repeat(2, 1fr);
+                padding: 40px 30px;
+                gap: 30px;
+            }
+
+            .stat-number {
+                font-size: 2.5rem;
+            }
+
+            .ai-services {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .deployment-options {
+                grid-template-columns: 1fr;
             }
 
             .btn-primary,
             .btn-secondary {
-                width: 100%;
                 padding: 18px 40px;
                 font-size: 1rem;
+                width: 100%;
+            }
+
+            .cta-group {
+                flex-direction: column;
+                gap: 15px;
             }
 
             section {
                 padding: 80px 0;
             }
 
-            .section-title {
-                font-size: 2rem;
-                margin-bottom: 50px;
-            }
-
-            .features {
-                grid-template-columns: 1fr;
-                gap: 25px;
-            }
-
-            .feature {
-                padding: 30px;
-            }
-
-            .feature-title {
-                font-size: 1.3rem;
-            }
-
-            .feature-text {
-                font-size: 1rem;
-            }
-
-            .stats {
-                grid-template-columns: 1fr;
-                gap: 40px;
-                margin-top: 60px;
-            }
-
-            .stat-number {
-                font-size: 3rem;
-            }
-
+            .feature,
             .use-case {
                 padding: 35px;
             }
 
-            .use-case-title {
-                font-size: 1.5rem;
-            }
-
-            .use-case-text {
-                font-size: 1rem;
-            }
-
             .final-cta {
-                padding: 100px 0;
+                padding: 80px 30px;
+                margin: 60px 0;
             }
 
             .final-cta h2 {
@@ -427,43 +604,44 @@
             }
 
             .final-cta p {
-                font-size: 1.1rem;
+                font-size: 1.2rem;
             }
         }
 
         @media (max-width: 480px) {
-            .container {
-                padding: 0 20px;
-            }
-
             .logo {
-                font-size: 2.5rem;
+                font-size: 3rem;
             }
 
             .tagline {
-                font-size: 1.2rem;
+                font-size: 1.5rem;
             }
 
             .subtitle {
-                font-size: 0.95rem;
+                font-size: 1rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
             }
 
             .btn-primary,
             .btn-secondary {
                 padding: 16px 30px;
-                font-size: 0.9rem;
+                font-size: 0.95rem;
             }
 
-            .section-title {
-                font-size: 1.8rem;
+            .stats-banner {
+                grid-template-columns: 1fr;
+                padding: 30px 20px;
             }
 
-            .feature {
-                padding: 25px;
+            .stat-number {
+                font-size: 2rem;
             }
 
-            .use-case {
-                padding: 30px;
+            .ai-services {
+                grid-template-columns: 1fr;
             }
 
             .final-cta h2 {
@@ -471,7 +649,7 @@
             }
 
             .final-cta p {
-                font-size: 1rem;
+                font-size: 1.1rem;
             }
         }
     </style>
@@ -479,125 +657,315 @@
 <body>
     <div class="container">
         <header>
-            <h1 class="logo">PROXILION</h1>
-            <p class="tagline">Take control of AI in your organization</p>
+            <div class="logo-container">
+                <h1 class="logo">PROXILION</h1>
+            </div>
+            <p class="tagline">Take Control of AI in Your Organization</p>
             <p class="subtitle">
                 The open-source MITM proxy that monitors, blocks, and audits every AI interaction. 
-                Deploy in 5 minutes. Zero configuration for users.
+                Deploy in 5 minutes. Zero configuration for users. Complete visibility.
             </p>
             <div class="cta-group">
-                <a href="https://github.com/clay-good/proxilion" class="btn-primary" target="_blank" rel="noopener">View on GitHub</a>
-                <a href="https://github.com/clay-good/proxilion/blob/main/docs/SETUP.md" class="btn-secondary" target="_blank" rel="noopener">Read Docs</a>
-            </div>
-        </header>
-
-        <section>
-            <h2 class="section-title">Why Proxilion?</h2>
-            <div class="features">
-                <div class="feature">
-                    <h3 class="feature-title">Block PII Automatically</h3>
-                    <p class="feature-text">
-                        Detects and blocks credit cards, SSNs, API keys, emails, and 50+ other sensitive data patterns before they reach ChatGPT, Claude, or any AI provider.
-                    </p>
-                </div>
-
-                <div class="feature">
-                    <h3 class="feature-title">Complete Visibility</h3>
-                    <p class="feature-text">
-                        See every prompt and response. Track who's using what AI service, when, and from which device. Export to your SIEM or compliance platform.
-                    </p>
-                </div>
-
-                <div class="feature">
-                    <h3 class="feature-title">Zero User Friction</h3>
-                    <p class="feature-text">
-                        Users access AI services normally. No plugins, no logins, no behavior change. Security happens transparently in the background.
-                    </p>
-                </div>
-
-                <div class="feature">
-                    <h3 class="feature-title">Works Everywhere</h3>
-                    <p class="feature-text">
-                        Desktop browsers, mobile apps, API clients, command-line tools. One deployment secures all devices across your entire organization.
-                    </p>
-                </div>
-
-                <div class="feature">
-                    <h3 class="feature-title">Custom Policies</h3>
-                    <p class="feature-text">
-                        Define rules per team, AI service, or data type. Block, redact, or alert. Create policies that match your security requirements exactly.
-                    </p>
-                </div>
-
-                <div class="feature">
-                    <h3 class="feature-title">Deploy Anywhere</h3>
-                    <p class="feature-text">
-                        Run on Cloudflare Workers, self-hosted infrastructure, or Kubernetes. Air-gapped deployments supported. Your data never leaves your control.
-                    </p>
-                </div>
+                <a href="https://github.com/clay-good/proxilion" class="btn-primary" target="_blank" rel="noopener">Get Started on GitHub</a>
+                <a href="https://github.com/clay-good/proxilion/blob/main/docs/SETUP.md" class="btn-secondary" target="_blank" rel="noopener">Read Documentation</a>
             </div>
 
-            <div class="stats">
-                <div>
+            <div class="stats-banner">
+                <div class="stat-item">
                     <div class="stat-number">&lt;10ms</div>
                     <div class="stat-label">Latency</div>
                 </div>
-                <div>
+                <div class="stat-item">
                     <div class="stat-number">50+</div>
                     <div class="stat-label">PII Detectors</div>
                 </div>
-                <div>
+                <div class="stat-item">
                     <div class="stat-number">5min</div>
-                    <div class="stat-label">Deploy Time</div>
+                    <div class="stat-label">Setup Time</div>
                 </div>
-                <div>
+                <div class="stat-item">
                     <div class="stat-number">100%</div>
                     <div class="stat-label">Open Source</div>
                 </div>
             </div>
-        </section>
+        </header>
 
         <section>
-            <h2 class="section-title">Built For</h2>
-            <div class="use-cases">
-                <div class="use-case">
-                    <h3 class="use-case-title">Security Teams</h3>
-                    <p class="use-case-text">
-                        Prevent data leaks while enabling AI adoption. Real-time PII detection and blocking. Complete audit logs for compliance. Policy enforcement across all AI services and devices.
+            <div class="section-header">
+                <h2 class="section-title">Why Proxilion?</h2>
+                <p class="section-subtitle">
+                    Enterprise-grade AI security that's transparent, self-hosted, and completely free. 
+                    No vendor lock-in. Full control over your data.
+                </p>
+            </div>
+            <div class="features">
+                <div class="feature">
+                    <span class="feature-icon"></span>
+                    <h3 class="feature-title">Block PII Automatically</h3>
+                    <p class="feature-text">
+                        Detects and blocks credit cards, SSNs, API keys, emails, and 50+ other sensitive data patterns 
+                        before they reach ChatGPT, Claude, Gemini, or any AI provider. Real-time protection.
                     </p>
                 </div>
 
-                <div class="use-case">
-                    <h3 class="use-case-title">Engineering Teams</h3>
-                    <p class="use-case-text">
-                        Monitor AI usage in production applications. Test prompts safely. Rate limit API calls. Debug AI integrations with full request/response logging.
+                <div class="feature">
+                    <span class="feature-icon"></span>
+                    <h3 class="feature-title">Complete Visibility</h3>
+                    <p class="feature-text">
+                        See every prompt and response. Track who's using what AI service, when, and from which device. 
+                        Export to your SIEM or compliance platform. Full audit trails.
                     </p>
                 </div>
 
-                <div class="use-case">
-                    <h3 class="use-case-title">Compliance Officers</h3>
-                    <p class="use-case-text">
-                        Meet GDPR, HIPAA, and SOC 2 requirements. Audit trails for every AI interaction. Data retention controls. Automatic redaction of regulated information.
+                <div class="feature">
+                    <span class="feature-icon"></span>
+                    <h3 class="feature-title">Zero User Friction</h3>
+                    <p class="feature-text">
+                        Users access AI services normally. No plugins, no logins, no behavior change. 
+                        Security happens transparently in the background with minimal latency.
                     </p>
                 </div>
 
-                <div class="use-case">
-                    <h3 class="use-case-title">IT Administrators</h3>
-                    <p class="use-case-text">
-                        Deploy via DNS, VPN, MDM, or Cloudflare Gateway. Automated certificate management. Multi-tenant support. Integrates with existing identity providers.
+                <div class="feature">
+                    <span class="feature-icon"></span>
+                    <h3 class="feature-title">Works Everywhere</h3>
+                    <p class="feature-text">
+                        Desktop browsers, mobile apps, API clients, command-line tools. 
+                        One deployment secures all devices across your entire organization.
+                    </p>
+                </div>
+
+                <div class="feature">
+                    <span class="feature-icon"></span>
+                    <h3 class="feature-title">Custom Policies</h3>
+                    <p class="feature-text">
+                        Define rules per team, AI service, or data type. Block, redact, or alert. 
+                        Create policies that match your security requirements exactly.
+                    </p>
+                </div>
+
+                <div class="feature">
+                    <span class="feature-icon"></span>
+                    <h3 class="feature-title">Deploy Anywhere</h3>
+                    <p class="feature-text">
+                        Run on Cloudflare Workers, self-hosted infrastructure, or Kubernetes. 
+                        Air-gapped deployments supported. Your data never leaves your control.
+                    </p>
+                </div>
+
+                <div class="feature">
+                    <span class="feature-icon"></span>
+                    <h3 class="feature-title">Rich Analytics</h3>
+                    <p class="feature-text">
+                        Track usage patterns, detect anomalies, and generate compliance reports. 
+                        Understand how AI is being used across your organization.
+                    </p>
+                </div>
+
+                <div class="feature">
+                    <span class="feature-icon"></span>
+                    <h3 class="feature-title">Air-Gapped Ready</h3>
+                    <p class="feature-text">
+                        Deploy in completely isolated environments. No external dependencies. 
+                        Perfect for highly regulated industries and sensitive workloads.
+                    </p>
+                </div>
+
+                <div class="feature">
+                    <span class="feature-icon"></span>
+                    <h3 class="feature-title">Production Ready</h3>
+                    <p class="feature-text">
+                        Battle-tested in production environments. Automatic SSL/TLS handling. 
+                        High availability, load balancing, and failover support built-in.
                     </p>
                 </div>
             </div>
         </section>
 
-        <section class="final-cta">
-            <h2>Get Started in Minutes</h2>
-            <p>Clone the repo, run the deploy script, and you're done.</p>
-            <a href="https://github.com/clay-good/proxilion" class="btn-primary" target="_blank" rel="noopener">Star on GitHub</a>
+        <section style="background: var(--bg-secondary); margin: 0 -40px; padding: 120px 40px; border-top: 1px solid var(--border);">
+            <div class="container" style="padding: 0;">
+                <div class="section-header">
+                    <h2 class="section-title">Protect All AI Services</h2>
+                    <p class="section-subtitle">
+                        Universal proxy for every major AI platform and LLM provider
+                    </p>
+                </div>
+                <div class="ai-services">
+                    <div class="ai-service-card">
+                        <div class="ai-service-icon"></div>
+                        <div class="ai-service-name">ChatGPT</div>
+                    </div>
+                    <div class="ai-service-card">
+                        <div class="ai-service-icon"></div>
+                        <div class="ai-service-name">Claude</div>
+                    </div>
+                    <div class="ai-service-card">
+                        <div class="ai-service-icon"></div>
+                        <div class="ai-service-name">Gemini</div>
+                    </div>
+                    <div class="ai-service-card">
+                        <div class="ai-service-icon"></div>
+                        <div class="ai-service-name">Midjourney</div>
+                    </div>
+                    <div class="ai-service-card">
+                        <div class="ai-service-icon"></div>
+                        <div class="ai-service-name">DALL-E</div>
+                    </div>
+                    <div class="ai-service-card">
+                        <div class="ai-service-icon"></div>
+                        <div class="ai-service-name">Perplexity</div>
+                    </div>
+                    <div class="ai-service-card">
+                        <div class="ai-service-icon"></div>
+                        <div class="ai-service-name">Anthropic API</div>
+                    </div>
+                    <div class="ai-service-card">
+                        <div class="ai-service-icon"></div>
+                        <div class="ai-service-name">OpenAI API</div>
+                    </div>
+                    <div class="ai-service-card">
+                        <div class="ai-service-icon"></div>
+                        <div class="ai-service-name">Cohere</div>
+                    </div>
+                    <div class="ai-service-card">
+                        <div class="ai-service-icon"></div>
+                        <div class="ai-service-name">Any LLM tool</div>
+                    </div>
+                </div>
+            </div>
         </section>
+
+        <section>
+            <div class="section-header">
+                <h2 class="section-title">Built For Every Team</h2>
+                <p class="section-subtitle">
+                    Whether you're in security, engineering, compliance, or IT, 
+                    Proxilion delivers the visibility and control you need.
+                </p>
+            </div>
+            <div class="use-cases">
+                <div class="use-case">
+                    <h3 class="use-case-title"> Security Teams</h3>
+                    <p class="use-case-text">
+                        Prevent data leaks while enabling AI adoption. Real-time PII detection and blocking. 
+                        Complete audit logs for compliance. Policy enforcement across all AI services and devices. 
+                        Detect anomalous behavior and suspicious patterns.
+                    </p>
+                </div>
+
+                <div class="use-case">
+                    <h3 class="use-case-title"> Engineering Teams</h3>
+                    <p class="use-case-text">
+                        Monitor AI usage in production applications. Test prompts safely in development. 
+                        Rate limit API calls. Debug AI integrations with full request/response logging. 
+                        A/B test different AI models and providers.
+                    </p>
+                </div>
+
+                <div class="use-case">
+                    <h3 class="use-case-title"> Compliance Officers</h3>
+                    <p class="use-case-text">
+                        Meet GDPR, HIPAA, and SOC 2 requirements effortlessly. Audit trails for every AI interaction. 
+                        Data retention controls. Automatic redaction of regulated information. 
+                        Generate compliance reports on demand.
+                    </p>
+                </div>
+
+                <div class="use-case">
+                    <h3 class="use-case-title"> IT Administrators</h3>
+                    <p class="use-case-text">
+                        Deploy via DNS, VPN, MDM, or Cloudflare Gateway. Automated certificate management. 
+                        Multi-tenant support. Integrates with existing identity providers and SSO. 
+                        Centralized policy management.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section style="background: var(--bg-secondary); margin: 0 -40px; padding: 120px 40px; border-top: 1px solid var(--border);">
+            <div class="container" style="padding: 0;">
+                <div class="section-header">
+                    <h2 class="section-title">Flexible Deployment</h2>
+                    <p class="section-subtitle">
+                        Choose the deployment method that works best for your infrastructure
+                    </p>
+                </div>
+                <div class="deployment-options">
+                    <div class="deployment-card">
+                        <div class="deployment-icon"></div>
+                        <h3 class="deployment-title">Cloudflare Workers</h3>
+                        <p class="deployment-text">
+                            Deploy globally in seconds. Zero infrastructure management. 
+                            Automatic scaling. Perfect for most organizations.
+                        </p>
+                    </div>
+                    <div class="deployment-card">
+                        <div class="deployment-icon"></div>
+                        <h3 class="deployment-title">Self-Hosted</h3>
+                        <p class="deployment-text">
+                            Run on your own infrastructure. Complete data control. 
+                            On-premises or private cloud. Ideal for compliance requirements.
+                        </p>
+                    </div>
+                    <div class="deployment-card">
+                        <div class="deployment-icon"></div>
+                        <h3 class="deployment-title">Kubernetes</h3>
+                        <p class="deployment-text">
+                            Production-grade orchestration. High availability. 
+                            Auto-scaling. Container-native architecture.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <div class="section-header">
+                <h2 class="section-title">How It Works</h2>
+                <p class="section-subtitle">Get started in minutes with our simple three-step process</p>
+            </div>
+            <div class="features">
+                <div class="feature">
+                    <span class="feature-icon">1️</span>
+                    <h3 class="feature-title">Clone & Configure</h3>
+                    <p class="feature-text">
+                        Clone the repository, configure your settings, and choose your deployment target. 
+                        Takes less than 5 minutes from start to finish.
+                    </p>
+                </div>
+
+                <div class="feature">
+                    <span class="feature-icon">2️</span>
+                    <h3 class="feature-title">Deploy</h3>
+                    <p class="feature-text">
+                        Run the deploy script. Automatic SSL/TLS certificate generation. 
+                        DNS configuration. Everything handled for you automatically.
+                    </p>
+                </div>
+
+                <div class="feature">
+                    <span class="feature-icon">3️</span>
+                    <h3 class="feature-title">Protect</h3>
+                    <p class="feature-text">
+                        Point your devices to the proxy. Users continue working normally. 
+                        All AI traffic is now monitored, audited, and secured.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <div class="final-cta">
+            <h2>Ready to Secure Your AI Usage?</h2>
+            <p>
+                Join organizations protecting their AI interactions with Proxilion. 
+                Open source, self-hosted, and completely free. Deploy in 5 minutes.
+            </p>
+            <a href="https://github.com/clay-good/proxilion" class="btn-primary" target="_blank" rel="noopener">Star on GitHub</a>
+        </div>
 
         <footer>
             <p>Built with transparency by <a href="https://github.com/clay-good" target="_blank" rel="noopener">Clay Good</a></p>
+            <p style="margin-top: 15px; font-size: 0.9rem;">Open Source • MIT License • Self-Hosted</p>
         </footer>
     </div>
 </body>
