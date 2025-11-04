@@ -4,13 +4,6 @@
 
 Proxilion is a production-ready security platform that enables safe AI adoption across **all devices and access methods** - mobile, browser, and API. It intercepts, inspects, and controls all AI traffic to prevent sensitive data exposure while maintaining full regulatory compliance (HIPAA, PCI-DSS, GDPR, CCPA, and more).
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue.svg)](https://www.typescriptlang.org/)
-[![Tests](https://img.shields.io/badge/tests-785%2F785%20passing-brightgreen.svg)](https://github.com/proxilion/proxilion)
-[![Build](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/proxilion/proxilion)
-[![Cloudflare](https://img.shields.io/badge/deploy-Cloudflare%20Workers-orange.svg)](https://workers.cloudflare.com/)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
-
 ---
 
 ## Quick Links
@@ -244,11 +237,11 @@ open http://localhost:8788
 
 | Method | Best For | Setup Time |
 |--------|----------|------------|
-| **[Cloudflare Workers](SETUP.md#option-1-cloudflare-workers-recommended)** | Global enterprises, zero infrastructure | 5 minutes |
-| **[Self-Hosted](SETUP.md#option-2-self-hosted-on-premises)** | Regulated industries, data sovereignty | 10 minutes |
-| **[Docker/Kubernetes](SETUP.md#option-3-docker)** | Containerized environments | 5 minutes |
+| **[Cloudflare Workers](docs/SETUP.md#option-1-cloudflare-workers-recommended)** | Global enterprises, zero infrastructure | 5 minutes |
+| **[Self-Hosted](docs/SETUP.md#option-2-self-hosted-on-premises)** | Regulated industries, data sovereignty | 10 minutes |
+| **[Docker/Kubernetes](docs/SETUP.md#option-3-docker)** | Containerized environments | 5 minutes |
 
-**📖 See [SETUP.md](SETUP.md) for complete deployment instructions including:**
+**📖 See [docs/SETUP.md](docs/SETUP.md) for complete deployment instructions including:**
 - DNS configuration (BIND, Windows DNS, Pi-hole, Cloudflare Gateway)
 - MDM setup (Intune, Jamf, Workspace ONE)
 - Certificate installation (Windows, macOS, Linux, iOS, Android)
@@ -300,7 +293,7 @@ Doctor sees: "⚠️ Request blocked: Protected Health Information (PHI) detecte
 
 **Result**: Zero PHI exposure, complete HIPAA compliance, doctor can still use AI safely
 
-**📖 See [SETUP.md](SETUP.md) for detailed deployment flows for mobile, browser, and API access.**
+**📖 See [docs/SETUP.md](docs/SETUP.md) for detailed deployment flows for mobile, browser, and API access.**
 
 ## 📚 Documentation
 
@@ -308,7 +301,7 @@ Doctor sees: "⚠️ Request blocked: Protected Health Information (PHI) detecte
 
 | Guide | Description |
 |-------|-------------|
-| **[Setup Guide](SETUP.md)** | Complete deployment guide: Cloudflare Workers, self-hosted, Docker, DNS, MDM, certificates |
+| **[Setup Guide](docs/SETUP.md)** | Complete deployment guide: Cloudflare Workers, self-hosted, Docker, DNS, MDM, certificates |
 | **[Architecture](docs/ARCHITECTURE.md)** | Technical architecture, components, and design decisions |
 | **[Advanced Features](docs/ADVANCED_FEATURES.md)** | Cost tracking, analytics, multi-tenancy, custom scanners |
 | **[Performance Optimization](docs/PERFORMANCE_OPTIMIZATION.md)** | Tuning, caching, benchmarks, and best practices |
@@ -409,7 +402,7 @@ See [.env.example](.env.example) for all configuration options.
 - `DATABASE_URL` - Optional database connection
 - `SIEM_ENDPOINT` - Optional SIEM integration
 
-**📖 See [SETUP.md](SETUP.md) for detailed configuration instructions.**
+**📖 See [docs/SETUP.md](docs/SETUP.md) for detailed configuration instructions.**
 
 ### Usage Examples
 
@@ -420,7 +413,7 @@ See [.env.example](.env.example) for all configuration options.
 - **Live Monitor** (`/monitor`) - View real-time blocked requests and alerts
 - **Compliance Reports** (`/reports`) - Generate audit reports for compliance
 
-**📖 See [SETUP.md](SETUP.md) for detailed usage instructions and examples.**
+**📖 See [docs/SETUP.md](docs/SETUP.md) for detailed usage instructions and examples.**
 
 ## 🔧 Advanced Configuration
 
@@ -488,7 +481,7 @@ Duration: ~8.6s
 - [ ] Test with sample PII data
 - [ ] Monitor dashboard for blocked requests
 
-**📖 See [SETUP.md](SETUP.md) for detailed deployment checklist and verification steps.**
+**📖 See [docs/SETUP.md](docs/SETUP.md) for detailed deployment checklist and verification steps.**
 
 ### Service Management (Self-Hosted)
 
