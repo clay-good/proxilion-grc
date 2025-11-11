@@ -881,13 +881,31 @@ app.all('/proxy/*', async (c) => {
     const unifiedRequest = await parserRegistry.parse(proxilionRequest);
 
     if (!unifiedRequest) {
-      logger.warn('Unable to parse request - passing through without scanning', {
+      // SECURITY: Never bypass scanning - reject unparseable requests
+      logger.error('Unable to parse request - REJECTING for security', undefined, {
         correlationId,
+        method: proxilionRequest.method,
+        url: proxilionRequest.url,
       });
 
-      // Pass through without scanning for non-AI requests
-      const response = await requestHandler.handleRequest(proxilionRequest);
-      return c.json(response.body, response.status as any, response.headers);
+      metrics.counter('request.parse_failed', 1);
+
+      // Complete span
+      span.setAttributes({
+        'http.status_code': 400,
+        'error.type': 'parse_failure',
+      });
+      span.setStatus('ERROR', 'Unable to parse request');
+      span.end();
+
+      return c.json(
+        {
+          error: 'Invalid request format',
+          message: 'Request could not be parsed for security scanning',
+          correlationId,
+        },
+        400
+      );
     }
 
     // Step 1.5: Rate limiting
@@ -1474,13 +1492,23 @@ app.all('*', async (c) => {
     const unifiedRequest = await parserRegistry.parse(proxilionRequest);
 
     if (!unifiedRequest) {
-      logger.warn('Unable to parse request in transparent mode - passing through', {
+      // SECURITY: Never bypass scanning - reject unparseable requests even in transparent mode
+      logger.error('Unable to parse request in transparent mode - REJECTING for security', undefined, {
         correlationId,
+        method: proxilionRequest.method,
+        url: proxilionRequest.url,
       });
 
-      // Pass through without scanning
-      const response = await requestHandler.handleRequest(proxilionRequest);
-      return c.json(response.body, response.status as any, response.headers);
+      metrics.counter('request.parse_failed_transparent', 1);
+
+      return c.json(
+        {
+          error: 'Invalid request format',
+          message: 'Request could not be parsed for security scanning',
+          correlationId,
+        },
+        400
+      );
     }
 
     logger.info('Request parsed successfully', {
