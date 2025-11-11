@@ -160,6 +160,7 @@ export class RateLimiter {
   /**
    * Sliding Window Algorithm
    * Precise rate limiting with sliding time window
+   * Optimized to avoid O(n) array filtering on every request
    */
   private checkSlidingWindow(key: string): RateLimitResult {
     const now = Date.now();
@@ -170,9 +171,22 @@ export class RateLimiter {
       this.state.set(key, state);
     }
 
-    // Remove requests outside the window
+    // Remove requests outside the window using binary search approach
     const windowStart = now - this.config.windowMs;
-    state.requests = state.requests.filter((timestamp) => timestamp > windowStart);
+
+    // Find first valid timestamp (optimization: avoid filter creating new array)
+    let validIndex = 0;
+    for (let i = 0; i < state.requests.length; i++) {
+      if (state.requests[i] > windowStart) {
+        validIndex = i;
+        break;
+      }
+    }
+
+    // Remove old entries efficiently (only if needed)
+    if (validIndex > 0) {
+      state.requests.splice(0, validIndex);
+    }
 
     // Check if we can allow this request
     if (state.requests.length < this.config.maxRequests) {

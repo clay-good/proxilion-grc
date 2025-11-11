@@ -19,12 +19,14 @@ export interface ConnectionPoolConfig {
 
 export class ConnectionPool {
   private connections: Map<string, PooledConnection[]> = new Map();
+  private availableByHost: Map<string, PooledConnection[]> = new Map();
   private waitQueue: Array<{
     host: string;
     resolve: (conn: PooledConnection) => void;
     reject: (error: Error) => void;
     timeout: NodeJS.Timeout;
   }> = [];
+  private waitQueueByHost: Map<string, number[]> = new Map(); // Track indices by host
 
   constructor(private config: ConnectionPoolConfig) {
     // Periodically clean up idle connections
@@ -36,6 +38,16 @@ export class ConnectionPool {
     if (available) {
       available.inUse = true;
       available.lastUsed = Date.now();
+
+      // Remove from available list
+      const availableList = this.availableByHost.get(host);
+      if (availableList) {
+        const index = availableList.indexOf(available);
+        if (index !== -1) {
+          availableList.splice(index, 1);
+        }
+      }
+
       return available;
     }
 
@@ -53,11 +65,26 @@ export class ConnectionPool {
         const index = this.waitQueue.findIndex((item) => item.resolve === resolve);
         if (index !== -1) {
           this.waitQueue.splice(index, 1);
+
+          // Remove from host-specific queue tracking
+          const hostQueue = this.waitQueueByHost.get(host);
+          if (hostQueue) {
+            const hostIndex = hostQueue.indexOf(index);
+            if (hostIndex !== -1) {
+              hostQueue.splice(hostIndex, 1);
+            }
+          }
         }
         reject(new Error(`Connection acquire timeout for ${host}`));
       }, this.config.acquireTimeout);
 
+      const queueIndex = this.waitQueue.length;
       this.waitQueue.push({ host, resolve, reject, timeout });
+
+      // Track by host for efficient lookup
+      const hostQueue = this.waitQueueByHost.get(host) || [];
+      hostQueue.push(queueIndex);
+      this.waitQueueByHost.set(host, hostQueue);
     });
   }
 
@@ -65,24 +92,43 @@ export class ConnectionPool {
     connection.inUse = false;
     connection.lastUsed = Date.now();
 
-    // Check if anyone is waiting for a connection
-    const waiterIndex = this.waitQueue.findIndex((w) => {
-      const hostConnections = this.connections.get(w.host) || [];
-      return hostConnections.some((c) => c.id === connection.id);
-    });
+    // Extract host from connection ID
+    const host = connection.id.split('-')[0];
 
-    if (waiterIndex !== -1) {
-      const waiter = this.waitQueue.splice(waiterIndex, 1)[0];
-      clearTimeout(waiter.timeout);
-      connection.inUse = true;
-      connection.lastUsed = Date.now();
-      waiter.resolve(connection);
+    // Check if anyone is waiting for a connection on this host
+    const hostQueue = this.waitQueueByHost.get(host);
+
+    if (hostQueue && hostQueue.length > 0) {
+      const queueIndex = hostQueue.shift()!; // Get first waiter for this host
+      const waiter = this.waitQueue[queueIndex];
+
+      if (waiter) {
+        // Remove from main queue
+        this.waitQueue.splice(queueIndex, 1);
+        clearTimeout(waiter.timeout);
+
+        connection.inUse = true;
+        connection.lastUsed = Date.now();
+        waiter.resolve(connection);
+        return;
+      }
+    }
+
+    // No waiters, add to available list
+    const availableList = this.availableByHost.get(host) || [];
+    if (!availableList.includes(connection)) {
+      availableList.push(connection);
+      this.availableByHost.set(host, availableList);
     }
   }
 
   private getAvailableConnection(host: string): PooledConnection | null {
-    const hostConnections = this.connections.get(host) || [];
-    return hostConnections.find((conn) => !conn.inUse) || null;
+    // Use pre-indexed available connections for O(1) lookup
+    const availableList = this.availableByHost.get(host);
+    if (availableList && availableList.length > 0) {
+      return availableList[availableList.length - 1]; // Return last (most recently used)
+    }
+    return null;
   }
 
   private createConnection(host: string): PooledConnection {

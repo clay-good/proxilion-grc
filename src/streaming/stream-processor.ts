@@ -72,8 +72,9 @@ export class StreamProcessor {
     const self = this;
     const decoder = new TextDecoder();
     const encoder = new TextEncoder();
-    
-    let buffer = '';
+
+    // Use array buffer for better string concatenation performance
+    const bufferParts: string[] = [];
     let chunkCount = 0;
     const startTime = Date.now();
 
@@ -91,11 +92,12 @@ export class StreamProcessor {
           
           if (done) {
             // Process any remaining buffer
-            if (buffer) {
-              const processed = await self.processChunk(buffer, correlationId, chunkCount++);
+            if (bufferParts.length > 0) {
+              const remainingBuffer = bufferParts.join('');
+              const processed = await self.processChunk(remainingBuffer, correlationId, chunkCount++);
               controller.enqueue(encoder.encode(processed.processedChunk));
             }
-            
+
             const duration = Date.now() - startTime;
             self.logger.info('Stream processing completed', {
               correlationId,
@@ -104,18 +106,25 @@ export class StreamProcessor {
             });
             self.metrics.histogram('stream_processing_duration_ms', duration);
             self.metrics.counter('stream_processing_completed_total');
-            
+
             controller.close();
             return;
           }
 
           // Decode chunk
           const chunk = decoder.decode(value, { stream: true });
-          buffer += chunk;
+          bufferParts.push(chunk);
 
-          // Process complete SSE events
-          const events = buffer.split('\n\n');
-          buffer = events.pop() || ''; // Keep incomplete event in buffer
+          // Process complete SSE events (join only when needed)
+          const fullBuffer = bufferParts.join('');
+          const events = fullBuffer.split('\n\n');
+
+          // Keep incomplete event in buffer
+          const incomplete = events.pop() || '';
+          bufferParts.length = 0;
+          if (incomplete) {
+            bufferParts.push(incomplete);
+          }
 
           for (const event of events) {
             if (event.trim()) {

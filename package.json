@@ -7,7 +7,8 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
-    "build": "npm run clean && tsc && esbuild src/index.ts --bundle --format=esm --outfile=dist/index.js --platform=node --target=node18",
+    "build": "npm run clean && tsc && esbuild src/index.ts --bundle --format=esm --outfile=dist/index.js --platform=node --target=node18 --minify --sourcemap=linked --tree-shaking=true",
+    "build:dev": "npm run clean && tsc && esbuild src/index.ts --bundle --format=esm --outfile=dist/index.js --platform=node --target=node18 --sourcemap=inline",
     "build:ui": "cd ui && npm install && npm run build",
     "build:all": "npm run build && npm run build:ui",
     "deploy": "wrangler deploy",
