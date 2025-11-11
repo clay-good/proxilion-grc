@@ -16,13 +16,18 @@ export interface RequestHandlerConfig {
 
 export class RequestHandler {
   private circuitBreakers: Map<string, CircuitBreaker> = new Map();
+  private circuitBreakerAccessTimes: Map<string, number> = new Map();
   private connectionPool: ConnectionPool;
+  private static readonly MAX_CIRCUIT_BREAKERS = 1000;
+  private static readonly CIRCUIT_BREAKER_IDLE_TIMEOUT = 3600000; // 1 hour
+  private cleanupInterval: NodeJS.Timeout | null = null;
 
   constructor(
     private config: RequestHandlerConfig,
     connectionPool: ConnectionPool
   ) {
     this.connectionPool = connectionPool;
+    this.startCleanup();
   }
 
   async handleRequest(request: ProxilionRequest): Promise<ProxilionResponse> {
@@ -127,6 +132,11 @@ export class RequestHandler {
   private getCircuitBreaker(host: string): CircuitBreaker {
     let breaker = this.circuitBreakers.get(host);
     if (!breaker) {
+      // Check if we need to evict LRU circuit breaker
+      if (this.circuitBreakers.size >= RequestHandler.MAX_CIRCUIT_BREAKERS) {
+        this.evictLRUCircuitBreaker();
+      }
+
       breaker = new CircuitBreaker(host, {
         failureThreshold: 5,
         successThreshold: 2,
@@ -135,7 +145,76 @@ export class RequestHandler {
       });
       this.circuitBreakers.set(host, breaker);
     }
+
+    // Update access time for LRU tracking
+    this.circuitBreakerAccessTimes.set(host, Date.now());
+
     return breaker;
+  }
+
+  /**
+   * Evict least recently used circuit breaker
+   */
+  private evictLRUCircuitBreaker(): void {
+    let oldestHost: string | null = null;
+    let oldestTime = Date.now();
+
+    for (const [host, time] of this.circuitBreakerAccessTimes.entries()) {
+      if (time < oldestTime) {
+        oldestTime = time;
+        oldestHost = host;
+      }
+    }
+
+    if (oldestHost) {
+      this.circuitBreakers.delete(oldestHost);
+      this.circuitBreakerAccessTimes.delete(oldestHost);
+      logger.debug('Evicted LRU circuit breaker', { host: oldestHost });
+      metrics.counter('circuit_breaker.evicted', 1);
+    }
+  }
+
+  /**
+   * Start periodic cleanup of idle circuit breakers
+   */
+  private startCleanup(): void {
+    this.cleanupInterval = setInterval(() => {
+      this.cleanupIdleCircuitBreakers();
+    }, 300000); // Run every 5 minutes
+  }
+
+  /**
+   * Remove idle circuit breakers
+   */
+  private cleanupIdleCircuitBreakers(): void {
+    const now = Date.now();
+    let removed = 0;
+
+    for (const [host, lastAccess] of this.circuitBreakerAccessTimes.entries()) {
+      if (now - lastAccess > RequestHandler.CIRCUIT_BREAKER_IDLE_TIMEOUT) {
+        this.circuitBreakers.delete(host);
+        this.circuitBreakerAccessTimes.delete(host);
+        removed++;
+      }
+    }
+
+    if (removed > 0) {
+      logger.debug('Cleaned up idle circuit breakers', { removed });
+      metrics.counter('circuit_breaker.cleanup', 1, { count: removed.toString() });
+    }
+  }
+
+  /**
+   * Stop request handler and cleanup resources
+   */
+  stop(): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
+    }
+    this.circuitBreakers.clear();
+    this.circuitBreakerAccessTimes.clear();
+    logger.info('Request handler stopped');
   }
 
   private prepareHeaders(headers: Record<string, string>): HeadersInit {

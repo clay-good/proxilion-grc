@@ -66,8 +66,8 @@ export class ResponseScanner {
   private metrics: MetricsCollector;
   private config: Required<ResponseScannerConfig>;
 
-  // PII patterns
-  private piiPatterns = {
+  // Static pattern definitions - shared across all instances
+  private static readonly piiPatterns = {
     ssn: /\b\d{3}-\d{2}-\d{4}\b/g,
     email: /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g,
     phone: /\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g,
@@ -76,8 +76,7 @@ export class ResponseScanner {
     passport: /\b[A-Z]{1,2}\d{6,9}\b/g,
   };
 
-  // Credential patterns
-  private credentialPatterns = {
+  private static readonly credentialPatterns = {
     apiKey: /\b[A-Za-z0-9_-]{32,}\b/g,
     awsKey: /\b(AKIA[0-9A-Z]{16})\b/g,
     privateKey: /-----BEGIN (RSA |EC |DSA )?PRIVATE KEY-----/g,
@@ -86,8 +85,7 @@ export class ResponseScanner {
     jwt: /\beyJ[A-Za-z0-9_-]*\.eyJ[A-Za-z0-9_-]*\.[A-Za-z0-9_-]*\b/g,
   };
 
-  // Harmful content patterns
-  private harmfulPatterns = {
+  private static readonly harmfulPatterns = {
     violence: /(kill|murder|assault|attack|harm|hurt|destroy)\s+(people|person|someone|them)/gi,
     hate: /(hate|despise|loathe)\s+(jews|muslims|christians|blacks|whites|asians|lgbtq)/gi,
     selfHarm: /(suicide|self-harm|cut myself|end my life|kill myself)/gi,
@@ -95,16 +93,14 @@ export class ResponseScanner {
     exploitation: /(child (abuse|exploitation|pornography)|human trafficking)/gi,
   };
 
-  // Malicious code patterns
-  private maliciousCodePatterns = {
+  private static readonly maliciousCodePatterns = {
     sqlInjection: /(union\s+select|drop\s+table|delete\s+from|insert\s+into)/gi,
     xss: /(<script|javascript:|onerror=|onload=)/gi,
     commandInjection: /(\||;|&&|\$\(|\`)/g,
     pathTraversal: /(\.\.\/|\.\.\\)/g,
   };
 
-  // Prompt leakage patterns
-  private promptLeakagePatterns = {
+  private static readonly promptLeakagePatterns = {
     systemPrompt: /(system prompt|system message|initial instructions|you are a|your role is)/gi,
     instructions: /(ignore previous|disregard|forget all|new instructions)/gi,
   };
@@ -243,7 +239,7 @@ export class ResponseScanner {
   private scanForPii(content: string): ResponseFinding[] {
     const findings: ResponseFinding[] = [];
 
-    for (const [type, pattern] of Object.entries(this.piiPatterns)) {
+    for (const [type, pattern] of Object.entries(ResponseScanner.piiPatterns)) {
       const matches = content.matchAll(pattern);
       for (const match of matches) {
         if (match.index !== undefined) {
@@ -272,7 +268,7 @@ export class ResponseScanner {
   private scanForCredentials(content: string): ResponseFinding[] {
     const findings: ResponseFinding[] = [];
 
-    for (const [type, pattern] of Object.entries(this.credentialPatterns)) {
+    for (const [type, pattern] of Object.entries(ResponseScanner.credentialPatterns)) {
       const matches = content.matchAll(pattern);
       for (const match of matches) {
         if (match.index !== undefined) {
@@ -301,7 +297,7 @@ export class ResponseScanner {
   private scanForHarmfulContent(content: string): ResponseFinding[] {
     const findings: ResponseFinding[] = [];
 
-    for (const [type, pattern] of Object.entries(this.harmfulPatterns)) {
+    for (const [type, pattern] of Object.entries(ResponseScanner.harmfulPatterns)) {
       const matches = content.matchAll(pattern);
       for (const match of matches) {
         if (match.index !== undefined) {
@@ -330,7 +326,7 @@ export class ResponseScanner {
   private scanForMaliciousCode(content: string): ResponseFinding[] {
     const findings: ResponseFinding[] = [];
 
-    for (const [type, pattern] of Object.entries(this.maliciousCodePatterns)) {
+    for (const [type, pattern] of Object.entries(ResponseScanner.maliciousCodePatterns)) {
       const matches = content.matchAll(pattern);
       for (const match of matches) {
         if (match.index !== undefined) {
@@ -359,7 +355,7 @@ export class ResponseScanner {
   private scanForPromptLeakage(content: string): ResponseFinding[] {
     const findings: ResponseFinding[] = [];
 
-    for (const [type, pattern] of Object.entries(this.promptLeakagePatterns)) {
+    for (const [type, pattern] of Object.entries(ResponseScanner.promptLeakagePatterns)) {
       const matches = content.matchAll(pattern);
       for (const match of matches) {
         if (match.index !== undefined) {

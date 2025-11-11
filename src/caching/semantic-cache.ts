@@ -59,6 +59,7 @@ export class SemanticCache {
   private config: SemanticCacheConfig;
   private logger: Logger;
   private metrics: MetricsCollector;
+  private cleanupInterval: NodeJS.Timeout | null = null;
   private stats: {
     hits: number;
     misses: number;
@@ -330,9 +331,21 @@ export class SemanticCache {
    * Start cleanup interval to remove expired entries
    */
   private startCleanupInterval(): void {
-    setInterval(() => {
+    this.cleanupInterval = setInterval(() => {
       this.cleanup();
     }, 60000); // Run every minute
+  }
+
+  /**
+   * Stop the semantic cache and cleanup resources
+   */
+  stop(): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
+    }
+    this.cache.clear();
+    this.logger.info('Semantic cache stopped');
   }
 
   /**

@@ -20,6 +20,15 @@ export type { Policy } from '../types/index.js';
 export class PolicyEngine {
   private policies: Policy[] = [];
 
+  // Static threat level values for efficient comparison
+  private static readonly THREAT_LEVEL_VALUES: Record<ThreatLevel, number> = {
+    [ThreatLevel.NONE]: 0,
+    [ThreatLevel.LOW]: 1,
+    [ThreatLevel.MEDIUM]: 2,
+    [ThreatLevel.HIGH]: 3,
+    [ThreatLevel.CRITICAL]: 4,
+  };
+
   constructor() {
     this.loadDefaultPolicies();
   }
@@ -161,11 +170,16 @@ export class PolicyEngine {
       policyCount: this.policies.length,
     });
 
+    // Build scanner result index for O(1) lookups
+    const scannerResultMap = new Map(
+      scanResult.scanResults.map(r => [r.scannerId, r])
+    );
+
     // Find first matching policy
     for (const policy of this.policies) {
       if (!policy.enabled) continue;
 
-      const matches = this.evaluateConditions(policy.conditions, request, scanResult);
+      const matches = this.evaluateConditions(policy.conditions, request, scanResult, scannerResultMap);
 
       if (matches.allMatched) {
         const decision: PolicyDecision = {
@@ -219,12 +233,13 @@ export class PolicyEngine {
   private evaluateConditions(
     conditions: PolicyCondition[],
     request: UnifiedAIRequest,
-    scanResult: AggregatedScanResult
+    scanResult: AggregatedScanResult,
+    scannerResultMap: Map<string, any>
   ): { allMatched: boolean; matched: PolicyCondition[] } {
     const matched: PolicyCondition[] = [];
 
     for (const condition of conditions) {
-      if (this.evaluateCondition(condition, request, scanResult)) {
+      if (this.evaluateCondition(condition, request, scanResult, scannerResultMap)) {
         matched.push(condition);
       }
     }
@@ -238,14 +253,15 @@ export class PolicyEngine {
   private evaluateCondition(
     condition: PolicyCondition,
     request: UnifiedAIRequest,
-    scanResult: AggregatedScanResult
+    scanResult: AggregatedScanResult,
+    scannerResultMap: Map<string, any>
   ): boolean {
     switch (condition.type) {
       case 'threat_level':
         return this.evaluateThreatLevel(condition, scanResult.overallThreatLevel);
 
       case 'scanner':
-        return this.evaluateScanner(condition, scanResult);
+        return this.evaluateScanner(condition, scannerResultMap);
 
       case 'user':
         return this.evaluateUser(condition, request);
@@ -260,17 +276,9 @@ export class PolicyEngine {
   }
 
   private evaluateThreatLevel(condition: PolicyCondition, threatLevel: ThreatLevel): boolean {
-    // Map threat levels to numeric values for comparison
-    const threatLevelValues: Record<ThreatLevel, number> = {
-      [ThreatLevel.NONE]: 0,
-      [ThreatLevel.LOW]: 1,
-      [ThreatLevel.MEDIUM]: 2,
-      [ThreatLevel.HIGH]: 3,
-      [ThreatLevel.CRITICAL]: 4,
-    };
-
-    const currentValue = threatLevelValues[threatLevel];
-    const conditionValue = threatLevelValues[condition.value as ThreatLevel];
+    // Use static threat level values for efficient comparison
+    const currentValue = PolicyEngine.THREAT_LEVEL_VALUES[threatLevel];
+    const conditionValue = PolicyEngine.THREAT_LEVEL_VALUES[condition.value as ThreatLevel];
 
     switch (condition.operator) {
       case 'eq':
@@ -299,11 +307,12 @@ export class PolicyEngine {
     }
   }
 
-  private evaluateScanner(condition: PolicyCondition, scanResult: AggregatedScanResult): boolean {
+  private evaluateScanner(condition: PolicyCondition, scannerResultMap: Map<string, any>): boolean {
     const scannerId = condition.field;
     if (!scannerId) return false;
 
-    const scannerResult = scanResult.scanResults.find((r) => r.scannerId === scannerId);
+    // O(1) lookup instead of O(n) find
+    const scannerResult = scannerResultMap.get(scannerId);
     if (!scannerResult) return false;
 
     switch (condition.operator) {

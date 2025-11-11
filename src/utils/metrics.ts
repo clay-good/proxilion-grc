@@ -4,9 +4,17 @@
 
 import { MetricEvent } from '../types/index.js';
 
+interface CircularBuffer {
+  buffer: MetricEvent[];
+  head: number;
+  tail: number;
+  size: number;
+  capacity: number;
+}
+
 export class MetricsCollector {
   private static instance: MetricsCollector;
-  private metrics: Map<string, MetricEvent[]> = new Map();
+  private metrics: Map<string, CircularBuffer> = new Map();
   private readonly maxMetricsPerName = 1000;
 
   private constructor() {}
@@ -53,36 +61,79 @@ export class MetricsCollector {
     });
   }
 
-  private record(metric: MetricEvent): void {
-    const existing = this.metrics.get(metric.name) || [];
-    existing.push(metric);
+  /**
+   * Initialize circular buffer for a metric
+   */
+  private initBuffer(name: string): CircularBuffer {
+    const buffer: CircularBuffer = {
+      buffer: new Array(this.maxMetricsPerName),
+      head: 0,
+      tail: 0,
+      size: 0,
+      capacity: this.maxMetricsPerName,
+    };
+    this.metrics.set(name, buffer);
+    return buffer;
+  }
 
-    // Keep only recent metrics to prevent memory bloat
-    // Use splice instead of shift for better performance when removing multiple items
-    if (existing.length > this.maxMetricsPerName) {
-      const excess = existing.length - this.maxMetricsPerName;
-      existing.splice(0, excess);
+  /**
+   * Record metric using circular buffer for O(1) insertion
+   */
+  private record(metric: MetricEvent): void {
+    let circularBuffer = this.metrics.get(metric.name);
+
+    if (!circularBuffer) {
+      circularBuffer = this.initBuffer(metric.name);
     }
 
-    this.metrics.set(metric.name, existing);
+    // O(1) insertion into circular buffer
+    circularBuffer.buffer[circularBuffer.tail] = metric;
+    circularBuffer.tail = (circularBuffer.tail + 1) % circularBuffer.capacity;
+
+    // Update size and head pointer
+    if (circularBuffer.size < circularBuffer.capacity) {
+      circularBuffer.size++;
+    } else {
+      // Buffer full, move head forward (overwriting oldest)
+      circularBuffer.head = (circularBuffer.head + 1) % circularBuffer.capacity;
+    }
+  }
+
+  /**
+   * Convert circular buffer to array
+   */
+  private bufferToArray(circularBuffer: CircularBuffer): MetricEvent[] {
+    const result: MetricEvent[] = [];
+    let count = 0;
+    let index = circularBuffer.head;
+
+    while (count < circularBuffer.size) {
+      result.push(circularBuffer.buffer[index]);
+      index = (index + 1) % circularBuffer.capacity;
+      count++;
+    }
+
+    return result;
   }
 
   getMetrics(name?: string): MetricEvent[] {
     if (name) {
-      return this.metrics.get(name) || [];
+      const circularBuffer = this.metrics.get(name);
+      return circularBuffer ? this.bufferToArray(circularBuffer) : [];
     }
 
     const all: MetricEvent[] = [];
-    for (const metrics of this.metrics.values()) {
-      all.push(...metrics);
+    for (const circularBuffer of this.metrics.values()) {
+      all.push(...this.bufferToArray(circularBuffer));
     }
     return all;
   }
 
   getStats(name: string): MetricStats | null {
-    const metrics = this.metrics.get(name);
-    if (!metrics || metrics.length === 0) return null;
+    const circularBuffer = this.metrics.get(name);
+    if (!circularBuffer || circularBuffer.size === 0) return null;
 
+    const metrics = this.bufferToArray(circularBuffer);
     const values = metrics.map((m) => m.value);
     values.sort((a, b) => a - b);
 

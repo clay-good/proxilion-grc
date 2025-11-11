@@ -29,13 +29,73 @@ export interface TransformationResult {
   };
 }
 
+type TransformationFunction = (
+  request: any,
+  warnings: string[],
+  unsupportedFeatures: string[],
+  preservedFields: string[],
+  droppedFields: string[]
+) => any;
+
 export class RequestTransformer {
   private logger: Logger;
   private metrics: MetricsCollector;
+  private transformationRoutes: Map<string, TransformationFunction>;
+
+  // Static model mappings to avoid object creation on every call
+  private static readonly MODEL_MAPPINGS: Record<string, Record<string, string>> = {
+    'openai->anthropic': {
+      'gpt-4': 'claude-3-opus-20240229',
+      'gpt-4-turbo': 'claude-3-opus-20240229',
+      'gpt-3.5-turbo': 'claude-3-sonnet-20240229',
+    },
+    'openai->google': {
+      'gpt-4': 'gemini-pro',
+      'gpt-4-turbo': 'gemini-pro',
+      'gpt-3.5-turbo': 'gemini-pro',
+    },
+    'openai->cohere': {
+      'gpt-4': 'command',
+      'gpt-4-turbo': 'command',
+      'gpt-3.5-turbo': 'command-light',
+    },
+    'anthropic->openai': {
+      'claude-3-opus-20240229': 'gpt-4',
+      'claude-3-sonnet-20240229': 'gpt-3.5-turbo',
+    },
+    'google->openai': {
+      'gemini-pro': 'gpt-4',
+    },
+    'cohere->openai': {
+      'command': 'gpt-4',
+      'command-light': 'gpt-3.5-turbo',
+    },
+  };
 
   constructor() {
     this.logger = new Logger();
     this.metrics = MetricsCollector.getInstance();
+    this.transformationRoutes = this.buildTransformationRoutes();
+  }
+
+  /**
+   * Build transformation route map for O(1) lookup
+   */
+  private buildTransformationRoutes(): Map<string, TransformationFunction> {
+    return new Map([
+      ['openai->anthropic', this.openaiToAnthropic.bind(this)],
+      ['openai->google', this.openaiToGoogle.bind(this)],
+      ['openai->cohere', this.openaiToCohere.bind(this)],
+      ['anthropic->openai', this.anthropicToOpenai.bind(this)],
+      ['anthropic->google', this.anthropicToGoogle.bind(this)],
+      ['anthropic->cohere', this.anthropicToCohere.bind(this)],
+      ['google->openai', this.googleToOpenai.bind(this)],
+      ['google->anthropic', this.googleToAnthropic.bind(this)],
+      ['google->cohere', this.googleToCohere.bind(this)],
+      ['cohere->openai', this.cohereToOpenai.bind(this)],
+      ['cohere->anthropic', this.cohereToAnthropic.bind(this)],
+      ['cohere->google', this.cohereToGoogle.bind(this)],
+    ]);
   }
 
   /**
@@ -69,46 +129,15 @@ export class RequestTransformer {
         };
       }
 
-      let transformedRequest: any;
+      // O(1) route lookup instead of nested if-else
+      const routeKey = `${config.sourceProvider}->${config.targetProvider}`;
+      const transformFn = this.transformationRoutes.get(routeKey);
 
-      // Route to appropriate transformation method
-      if (config.sourceProvider === 'openai') {
-        if (config.targetProvider === 'anthropic') {
-          transformedRequest = this.openaiToAnthropic(request, warnings, unsupportedFeatures, preservedFields, droppedFields);
-        } else if (config.targetProvider === 'google') {
-          transformedRequest = this.openaiToGoogle(request, warnings, unsupportedFeatures, preservedFields, droppedFields);
-        } else if (config.targetProvider === 'cohere') {
-          transformedRequest = this.openaiToCohere(request, warnings, unsupportedFeatures, preservedFields, droppedFields);
-        }
-      } else if (config.sourceProvider === 'anthropic') {
-        if (config.targetProvider === 'openai') {
-          transformedRequest = this.anthropicToOpenai(request, warnings, unsupportedFeatures, preservedFields, droppedFields);
-        } else if (config.targetProvider === 'google') {
-          transformedRequest = this.anthropicToGoogle(request, warnings, unsupportedFeatures, preservedFields, droppedFields);
-        } else if (config.targetProvider === 'cohere') {
-          transformedRequest = this.anthropicToCohere(request, warnings, unsupportedFeatures, preservedFields, droppedFields);
-        }
-      } else if (config.sourceProvider === 'google') {
-        if (config.targetProvider === 'openai') {
-          transformedRequest = this.googleToOpenai(request, warnings, unsupportedFeatures, preservedFields, droppedFields);
-        } else if (config.targetProvider === 'anthropic') {
-          transformedRequest = this.googleToAnthropic(request, warnings, unsupportedFeatures, preservedFields, droppedFields);
-        } else if (config.targetProvider === 'cohere') {
-          transformedRequest = this.googleToCohere(request, warnings, unsupportedFeatures, preservedFields, droppedFields);
-        }
-      } else if (config.sourceProvider === 'cohere') {
-        if (config.targetProvider === 'openai') {
-          transformedRequest = this.cohereToOpenai(request, warnings, unsupportedFeatures, preservedFields, droppedFields);
-        } else if (config.targetProvider === 'anthropic') {
-          transformedRequest = this.cohereToAnthropic(request, warnings, unsupportedFeatures, preservedFields, droppedFields);
-        } else if (config.targetProvider === 'google') {
-          transformedRequest = this.cohereToGoogle(request, warnings, unsupportedFeatures, preservedFields, droppedFields);
-        }
-      }
-
-      if (!transformedRequest) {
+      if (!transformFn) {
         throw new Error(`Unsupported transformation: ${config.sourceProvider} -> ${config.targetProvider}`);
       }
+
+      const transformedRequest = transformFn(request, warnings, unsupportedFeatures, preservedFields, droppedFields);
 
       // Check strict mode
       if (config.strictMode && unsupportedFeatures.length > 0) {
@@ -349,29 +378,11 @@ export class RequestTransformer {
   }
 
   /**
-   * Map model names between providers
+   * Map model names between providers using static mappings
    */
   private mapModel(model: string, sourceProvider: string, targetProvider: string): string {
-    const modelMappings: Record<string, Record<string, string>> = {
-      'openai->anthropic': {
-        'gpt-4': 'claude-3-opus-20240229',
-        'gpt-4-turbo': 'claude-3-opus-20240229',
-        'gpt-3.5-turbo': 'claude-3-sonnet-20240229',
-      },
-      'openai->google': {
-        'gpt-4': 'gemini-pro',
-        'gpt-4-turbo': 'gemini-pro',
-        'gpt-3.5-turbo': 'gemini-pro',
-      },
-      'openai->cohere': {
-        'gpt-4': 'command',
-        'gpt-4-turbo': 'command',
-        'gpt-3.5-turbo': 'command-light',
-      },
-    };
-
     const key = `${sourceProvider}->${targetProvider}`;
-    const mapping = modelMappings[key];
+    const mapping = RequestTransformer.MODEL_MAPPINGS[key];
 
     if (mapping && mapping[model]) {
       return mapping[model];
