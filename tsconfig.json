@@ -17,7 +17,9 @@
     "noEmit": false,
     "declaration": true,
     "declarationMap": true,
-    "sourceMap": true,
+    "sourceMap": false,
+    "inlineSources": false,
+    "removeComments": true,
     "types": ["@cloudflare/workers-types", "node"],
     "paths": {
       "@/*": ["./src/*"]

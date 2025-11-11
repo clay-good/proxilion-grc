@@ -775,18 +775,19 @@ export class AnomalyDetector {
   private storeAnomalies(anomalies: Anomaly[]): void {
     this.detectedAnomalies.push(...anomalies);
 
-    // Cleanup old anomalies
+    // Cleanup old anomalies and limit storage in one pass
     const cutoff = Date.now() - this.config.anomalyRetentionPeriod;
-    this.detectedAnomalies = this.detectedAnomalies.filter(
-      (a) => a.timestamp > cutoff
-    );
+    const maxStored = this.config.maxAnomaliesStored;
 
-    // Limit storage
-    if (this.detectedAnomalies.length > this.config.maxAnomaliesStored) {
-      this.detectedAnomalies = this.detectedAnomalies.slice(
-        -this.config.maxAnomaliesStored
-      );
+    // Filter out old entries
+    let filtered = this.detectedAnomalies.filter((a) => a.timestamp > cutoff);
+
+    // Limit storage - only slice if needed to avoid unnecessary array allocation
+    if (filtered.length > maxStored) {
+      filtered = filtered.slice(-maxStored);
     }
+
+    this.detectedAnomalies = filtered;
   }
 
   private emptyResult(): AnomalyDetectionResult {

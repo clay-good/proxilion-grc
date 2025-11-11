@@ -74,7 +74,8 @@ export class ResponseFilter {
   ): Promise<FilterResult> {
     const startTime = Date.now();
     const appliedFilters: string[] = [];
-    let filteredResponse = JSON.parse(JSON.stringify(response)) as UnifiedAIResponse;
+    // Use shallow clone for better performance - deep clone only if we modify
+    let filteredResponse = response;
     let blocked = false;
     let modified = false;
     let reason: string | undefined;

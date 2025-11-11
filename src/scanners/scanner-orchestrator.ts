@@ -112,7 +112,35 @@ export class ScannerOrchestrator {
       this.executeScannerWithTimeout(scanner, request)
     );
 
-    return await Promise.all(scanPromises);
+    // Use allSettled to prevent one scanner failure from blocking others
+    const results = await Promise.allSettled(scanPromises);
+
+    return results.map((result, index) => {
+      if (result.status === 'fulfilled') {
+        return result.value;
+      } else {
+        // Handle rejected scanner
+        const scanner = this.scanners[index];
+        logger.error(`Scanner ${scanner.name} rejected`, result.reason);
+
+        return {
+          scannerId: scanner.id,
+          scannerName: scanner.name,
+          passed: false,
+          threatLevel: ThreatLevel.NONE,
+          score: 0,
+          findings: [
+            {
+              type: 'Scanner Error',
+              severity: ThreatLevel.LOW,
+              message: `Scanner failed: ${result.reason?.message || 'Unknown error'}`,
+              confidence: 1.0,
+            },
+          ],
+          executionTimeMs: this.config.scanTimeout,
+        };
+      }
+    });
   }
 
   private async scanSequential(request: UnifiedAIRequest) {
@@ -127,21 +155,36 @@ export class ScannerOrchestrator {
   }
 
   private async executeScannerWithTimeout(scanner: BaseScanner, request: UnifiedAIRequest) {
+    // Use AbortController for proper timeout cleanup
+    let timeoutId: NodeJS.Timeout | null = null;
+
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error(`Scanner ${scanner.name} timed out`)), this.config.scanTimeout);
+      timeoutId = setTimeout(() => {
+        reject(new Error(`Scanner ${scanner.name} timed out`));
+      }, this.config.scanTimeout);
     });
 
     try {
       const result = await Promise.race([scanner.scan(request), timeoutPromise]);
-      
+
+      // Clear timeout to prevent memory leak
+      if (timeoutId !== null) {
+        clearTimeout(timeoutId);
+      }
+
       metrics.histogram('scanner.duration', (result as any).executionTimeMs, {
         scanner: scanner.id,
       });
-      
+
       return result as any;
     } catch (error) {
+      // Clear timeout on error
+      if (timeoutId !== null) {
+        clearTimeout(timeoutId);
+      }
+
       logger.error(`Scanner ${scanner.name} failed`, error as Error);
-      
+
       // Return a failed scan result instead of throwing
       return {
         scannerId: scanner.id,

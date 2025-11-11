@@ -256,8 +256,8 @@ healthChecker.registerCheck('anthropic', () =>
   createDependencyHealthCheck('anthropic', 'https://api.anthropic.com', 5000)
 );
 
-// Start periodic health checks
-healthChecker.startPeriodicChecks(30000);
+// Start periodic health checks (2 minutes - reduced from 30s to lower overhead)
+healthChecker.startPeriodicChecks(120000);
 
 // Health check endpoint
 app.get('/health', async (c) => {
