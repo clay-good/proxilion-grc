@@ -71,6 +71,7 @@ export class RateLimiter {
   private metrics: MetricsCollector;
   private tenantQuotas: Map<string, TenantQuota> = new Map();
   private userQuotas: Map<string, UserQuota> = new Map();
+  private cleanupInterval: NodeJS.Timeout | null = null;
 
   constructor(config: RateLimitConfig) {
     this.config = {
@@ -80,6 +81,9 @@ export class RateLimiter {
     this.state = new Map();
     this.logger = new Logger();
     this.metrics = MetricsCollector.getInstance();
+
+    // Start automatic cleanup to prevent memory leaks
+    this.startCleanup();
   }
 
   /**
@@ -365,6 +369,28 @@ export class RateLimiter {
     if (removed > 0) {
       this.logger.debug('Rate limiter cleanup', { removed });
     }
+  }
+
+  /**
+   * Start periodic cleanup to prevent memory leaks
+   */
+  private startCleanup(): void {
+    // Run cleanup every 5 minutes
+    this.cleanupInterval = setInterval(() => {
+      this.cleanup();
+    }, 5 * 60 * 1000);
+  }
+
+  /**
+   * Stop the rate limiter and cleanup resources
+   */
+  stop(): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
+    }
+    this.clear();
+    this.logger.info('Rate limiter stopped');
   }
 
   /**

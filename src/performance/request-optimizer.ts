@@ -13,6 +13,7 @@
 import { UnifiedAIRequest, ScanResult, ThreatLevel, PolicyAction } from '../types/index.js';
 import { logger } from '../utils/logger.js';
 import { metrics } from '../utils/metrics.js';
+import { hashObject } from '../utils/hash.js';
 
 export interface OptimizationConfig {
   enableParallelScanning?: boolean;
@@ -69,22 +70,8 @@ export class RequestOptimizer {
    * Generate cache key from request content
    */
   private generateCacheKey(request: UnifiedAIRequest): string {
-    // Hash the messages content for cache key
-    const content = JSON.stringify(request.messages);
-    return this.simpleHash(content);
-  }
-
-  /**
-   * Simple hash function for cache keys
-   */
-  private simpleHash(str: string): string {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      const char = str.charCodeAt(i);
-      hash = (hash << 5) - hash + char;
-      hash = hash & hash; // Convert to 32-bit integer
-    }
-    return hash.toString(36);
+    // Use optimized hash function from shared utility
+    return hashObject(request.messages);
   }
 
   /**
@@ -124,13 +111,17 @@ export class RequestOptimizer {
       return;
     }
 
-    // Check cache size limit
+    // Check cache size limit - remove multiple entries if needed
     const maxSize = this.config.maxCacheSize || 10000;
     if (this.scanCache.size >= maxSize) {
-      // Remove oldest entry
-      const firstKey = this.scanCache.keys().next().value;
-      if (firstKey) {
-        this.scanCache.delete(firstKey);
+      // Remove 10% of entries when limit is reached for better batch efficiency
+      const entriesToRemove = Math.max(1, Math.floor(maxSize * 0.1));
+      const iterator = this.scanCache.keys();
+
+      for (let i = 0; i < entriesToRemove; i++) {
+        const entry = iterator.next();
+        if (entry.done) break;
+        this.scanCache.delete(entry.value);
       }
     }
 
@@ -234,10 +225,12 @@ export class RequestOptimizer {
     this.forwardTimeMetrics.push(forwardMs);
 
     // Keep only last 1000 measurements
+    // Use splice for better performance when removing multiple items
     if (this.latencyMetrics.length > 1000) {
-      this.latencyMetrics.shift();
-      this.scanTimeMetrics.shift();
-      this.forwardTimeMetrics.shift();
+      const excess = this.latencyMetrics.length - 1000;
+      this.latencyMetrics.splice(0, excess);
+      this.scanTimeMetrics.splice(0, excess);
+      this.forwardTimeMetrics.splice(0, excess);
     }
 
     metrics.histogram('optimizer.latency.total', totalMs);

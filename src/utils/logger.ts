@@ -9,6 +9,24 @@ export class Logger {
   private minLevel: LogLevel;
   private correlationId?: string;
 
+  // Pre-compiled regex patterns for better performance
+  private static readonly maskPatterns = [
+    { pattern: /\b[a-zA-Z0-9]{32,}\b/g, replacement: '[REDACTED_KEY]' },
+    { pattern: /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, replacement: '[EMAIL]' },
+    { pattern: /\b\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/g, replacement: '[CARD]' },
+    { pattern: /\b\d{3}-\d{2}-\d{4}\b/g, replacement: '[SSN]' },
+  ];
+
+  private static readonly sensitiveKeyPatterns = [
+    /api[_-]?key/i,
+    /auth/i,
+    /token/i,
+    /secret/i,
+    /password/i,
+    /credential/i,
+    /bearer/i,
+  ];
+
   constructor(config?: { maskSensitiveData?: boolean; minLevel?: LogLevel }) {
     this.maskSensitiveData = config?.maskSensitiveData ?? true;
     this.minLevel = config?.minLevel ?? LogLevel.INFO;
@@ -30,7 +48,7 @@ export class Logger {
     return levels.indexOf(level) >= levels.indexOf(this.minLevel);
   }
 
-  private maskData(data: unknown): unknown {
+  private maskData(data: unknown, seen: WeakSet<object> = new WeakSet()): unknown {
     if (!this.maskSensitiveData) return data;
 
     if (typeof data === 'string') {
@@ -38,16 +56,27 @@ export class Logger {
     }
 
     if (Array.isArray(data)) {
-      return data.map((item) => this.maskData(item));
+      // Check for circular references
+      if (seen.has(data)) {
+        return '[Circular]';
+      }
+      seen.add(data);
+      return data.map((item) => this.maskData(item, seen));
     }
 
     if (data && typeof data === 'object') {
+      // Check for circular references
+      if (seen.has(data)) {
+        return '[Circular]';
+      }
+      seen.add(data);
+
       const masked: Record<string, unknown> = {};
       for (const [key, value] of Object.entries(data)) {
         if (this.isSensitiveKey(key)) {
           masked[key] = '[REDACTED]';
         } else {
-          masked[key] = this.maskData(value);
+          masked[key] = this.maskData(value, seen);
         }
       }
       return masked;
@@ -57,31 +86,14 @@ export class Logger {
   }
 
   private isSensitiveKey(key: string): boolean {
-    const sensitivePatterns = [
-      /api[_-]?key/i,
-      /auth/i,
-      /token/i,
-      /secret/i,
-      /password/i,
-      /credential/i,
-      /bearer/i,
-    ];
-    return sensitivePatterns.some((pattern) => pattern.test(key));
+    return Logger.sensitiveKeyPatterns.some((pattern) => pattern.test(key));
   }
 
   private maskString(str: string): string {
-    // Mask potential API keys (long alphanumeric strings)
-    str = str.replace(/\b[a-zA-Z0-9]{32,}\b/g, '[REDACTED_KEY]');
-
-    // Mask email addresses
-    str = str.replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, '[EMAIL]');
-
-    // Mask potential credit card numbers
-    str = str.replace(/\b\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/g, '[CARD]');
-
-    // Mask SSN-like patterns
-    str = str.replace(/\b\d{3}-\d{2}-\d{4}\b/g, '[SSN]');
-
+    // Use pre-compiled patterns for better performance
+    for (const { pattern, replacement } of Logger.maskPatterns) {
+      str = str.replace(pattern, replacement);
+    }
     return str;
   }
 

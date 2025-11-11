@@ -12,7 +12,12 @@
 import { UnifiedAIRequest, ProxilionResponse } from '../types/index.js';
 import { Logger } from '../utils/logger.js';
 import { MetricsCollector } from '../utils/metrics.js';
-import { gzipSync, gunzipSync } from 'zlib';
+import { gzip, gunzip } from 'zlib';
+import { promisify } from 'util';
+import { generateCacheKey } from '../utils/hash.js';
+
+const gzipAsync = promisify(gzip);
+const gunzipAsync = promisify(gunzip);
 
 interface CacheEntry {
   key: string;
@@ -79,30 +84,7 @@ export class CacheManager {
    * Generate cache key from request
    */
   private generateKey(request: UnifiedAIRequest): string {
-    // Create deterministic key from request parameters
-    const keyData = {
-      provider: request.provider,
-      model: request.model,
-      messages: request.messages,
-      parameters: {
-        temperature: request.parameters.temperature,
-        maxTokens: request.parameters.maxTokens,
-        topP: request.parameters.topP,
-        topK: request.parameters.topK,
-      },
-      tools: request.tools,
-    };
-
-    // Simple hash function (in production, use crypto.subtle.digest)
-    const str = JSON.stringify(keyData);
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      const char = str.charCodeAt(i);
-      hash = (hash << 5) - hash + char;
-      hash = hash & hash; // Convert to 32-bit integer
-    }
-
-    return `cache:${request.provider}:${request.model}:${hash.toString(36)}`;
+    return generateCacheKey(request);
   }
 
   /**
@@ -178,7 +160,7 @@ export class CacheManager {
 
     // Decompress if needed
     if (entry.compressed && Buffer.isBuffer(entry.value)) {
-      const decompressed = gunzipSync(entry.value);
+      const decompressed = await gunzipAsync(entry.value);
       return JSON.parse(decompressed.toString('utf-8'));
     }
 
@@ -211,7 +193,7 @@ export class CacheManager {
 
       // Only compress if size is significant (> 1KB)
       if (buffer.length > 1024) {
-        const compressedBuffer = gzipSync(buffer);
+        const compressedBuffer = await gzipAsync(buffer);
 
         // Only use compression if it actually reduces size
         if (compressedBuffer.length < buffer.length) {

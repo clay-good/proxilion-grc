@@ -11,6 +11,7 @@
 import { UnifiedAIRequest, ProxilionResponse } from '../types/index.js';
 import { Logger } from '../utils/logger.js';
 import { MetricsCollector } from '../utils/metrics.js';
+import { generateDeduplicationKey } from '../utils/hash.js';
 
 interface PendingRequest {
   key: string;
@@ -26,42 +27,23 @@ export class RequestDeduplicator {
   private logger: Logger;
   private metrics: MetricsCollector;
   private timeout: number;
+  private cleanupInterval: NodeJS.Timeout | null = null;
 
   constructor(timeout: number = 30000) {
     this.pending = new Map();
     this.logger = new Logger();
     this.metrics = MetricsCollector.getInstance();
     this.timeout = timeout;
+
+    // Start automatic cleanup to prevent memory leaks
+    this.startCleanup();
   }
 
   /**
    * Generate deduplication key from request
    */
   private generateKey(request: UnifiedAIRequest): string {
-    // Create deterministic key from request parameters
-    const keyData = {
-      provider: request.provider,
-      model: request.model,
-      messages: request.messages,
-      parameters: {
-        temperature: request.parameters.temperature,
-        maxTokens: request.parameters.maxTokens,
-        topP: request.parameters.topP,
-        topK: request.parameters.topK,
-      },
-      tools: request.tools,
-    };
-
-    // Simple hash function
-    const str = JSON.stringify(keyData);
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      const char = str.charCodeAt(i);
-      hash = (hash << 5) - hash + char;
-      hash = hash & hash;
-    }
-
-    return `dedup:${request.provider}:${request.model}:${hash.toString(36)}`;
+    return generateDeduplicationKey(request);
   }
 
   /**
@@ -243,6 +225,28 @@ export class RequestDeduplicator {
       this.logger.warn('Cleaned up expired pending requests', { removed });
       this.metrics.gauge('pending_deduplicated_requests', this.pending.size);
     }
+  }
+
+  /**
+   * Start periodic cleanup to prevent memory leaks
+   */
+  private startCleanup(): void {
+    // Run cleanup every 30 seconds
+    this.cleanupInterval = setInterval(() => {
+      this.cleanup();
+    }, 30 * 1000);
+  }
+
+  /**
+   * Stop the deduplicator and cleanup resources
+   */
+  stop(): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+      this.cleanupInterval = null;
+    }
+    this.clear();
+    this.logger.info('Request deduplicator stopped');
   }
 }
 

@@ -58,8 +58,10 @@ export class MetricsCollector {
     existing.push(metric);
 
     // Keep only recent metrics to prevent memory bloat
+    // Use splice instead of shift for better performance when removing multiple items
     if (existing.length > this.maxMetricsPerName) {
-      existing.shift();
+      const excess = existing.length - this.maxMetricsPerName;
+      existing.splice(0, excess);
     }
 
     this.metrics.set(metric.name, existing);
