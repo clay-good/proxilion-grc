@@ -6,6 +6,7 @@
 import { BaseScanner } from './base-scanner.js';
 import { UnifiedAIRequest, ScanResult, ThreatLevel, Finding } from '../types/index.js';
 import { Logger } from '../utils/logger.js';
+import { textExtractionCache } from '../utils/text-extractor.js';
 
 interface DLPPattern {
   name: string;
@@ -244,22 +245,9 @@ export class DLPScanner extends BaseScanner {
   }
 
   private extractTextContent(request: UnifiedAIRequest): string {
-    const texts: string[] = [];
-
-    // Extract from messages
-    for (const message of request.messages) {
-      if (typeof message.content === 'string') {
-        texts.push(message.content);
-      } else if (Array.isArray(message.content)) {
-        for (const part of message.content) {
-          if (part.type === 'text' && part.text) {
-            texts.push(part.text);
-          }
-        }
-      }
-    }
-
-    return texts.join('\n');
+    // Use shared text extraction cache to eliminate redundant extraction across scanners
+    const extracted = textExtractionCache.get(request);
+    return extracted.fullText;
   }
 
   private findPatternMatches(text: string, pattern: DLPPattern): Finding[] {

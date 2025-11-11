@@ -33,6 +33,7 @@ export class ResponseProcessor {
   private logger: Logger;
   private metrics: MetricsCollector;
   private piiScanner: PIIScanner;
+  private parsedBodyCache = new WeakMap<ProxilionResponse, any>();
 
   constructor(config: Partial<ResponseProcessingConfig> = {}) {
     this.config = {
@@ -145,11 +146,24 @@ export class ResponseProcessor {
   }
 
   /**
+   * Get parsed body with caching to avoid repeated JSON parsing
+   */
+  private getParsedBody(response: ProxilionResponse): any {
+    if (this.parsedBodyCache.has(response)) {
+      return this.parsedBodyCache.get(response);
+    }
+
+    const parsed = typeof response.body === 'string' ? JSON.parse(response.body) : response.body;
+    this.parsedBodyCache.set(response, parsed);
+    return parsed;
+  }
+
+  /**
    * Extract text content from response
    */
   private extractContent(response: ProxilionResponse): string | null {
     try {
-      const body = typeof response.body === 'string' ? JSON.parse(response.body) : response.body;
+      const body = this.getParsedBody(response);
 
       // OpenAI format
       if (body.choices && Array.isArray(body.choices)) {
@@ -237,7 +251,7 @@ export class ResponseProcessor {
    */
   private replaceContent(response: ProxilionResponse, newContent: string): void {
     try {
-      const body = typeof response.body === 'string' ? JSON.parse(response.body) : response.body;
+      const body = this.getParsedBody(response);
 
       // OpenAI format
       if (body.choices && Array.isArray(body.choices)) {
