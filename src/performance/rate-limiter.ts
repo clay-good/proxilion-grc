@@ -171,22 +171,12 @@ export class RateLimiter {
       this.state.set(key, state);
     }
 
-    // Remove requests outside the window using binary search approach
+    // Remove requests outside the window
     const windowStart = now - this.config.windowMs;
 
-    // Find first valid timestamp (optimization: avoid filter creating new array)
-    let validIndex = 0;
-    for (let i = 0; i < state.requests.length; i++) {
-      if (state.requests[i] > windowStart) {
-        validIndex = i;
-        break;
-      }
-    }
-
-    // Remove old entries efficiently (only if needed)
-    if (validIndex > 0) {
-      state.requests.splice(0, validIndex);
-    }
+    // Filter out all requests that are outside the window
+    // This handles the case where ALL requests are expired
+    state.requests = state.requests.filter(timestamp => timestamp > windowStart);
 
     // Check if we can allow this request
     if (state.requests.length < this.config.maxRequests) {

@@ -1,221 +1,107 @@
-# Proxilion
+# Proxilion GRC
 
-**Universal AI Security & Compliance Platform for Enterprise**
+**AI Security Proxy for Enterprise Governance, Risk, and Compliance**
 
-Proxilion is a production-ready security platform that enables safe AI adoption across **all devices and access methods** - mobile, browser, and API. It intercepts, inspects, and controls all AI traffic to prevent sensitive data exposure while maintaining full regulatory compliance (HIPAA, PCI-DSS, GDPR, CCPA, and more).
-
----
-
-## Quick Links
-
-- **[📖 Complete Setup Guide](docs/SETUP.md)** - **START HERE** - Deployment, DNS, MDM, certificates
-- **[🌐 Marketing Site](marketing_website/index.html)** - Visual overview and setup instructions
-- **[⚙️ Configuration Reference](.env.example)** - Environment variables
-- **[🏗️ Architecture Guide](docs/ARCHITECTURE.md)** - Technical deep dive
+Proxilion GRC is a security proxy that intercepts, inspects, and controls traffic to AI services (ChatGPT, Claude, Gemini, Cohere) to prevent sensitive data exposure and maintain regulatory compliance.
 
 ---
 
-## The Problem We Solve
+## What This Project Does
 
-Organizations want to leverage AI tools (ChatGPT, Claude, Gemini) but face critical challenges:
-
-- **Data Leakage Risk**: Employees may share SSNs, credit cards, PHI, or confidential data with AI providers
-- **Compliance Violations**: HIPAA, PCI-DSS, GDPR prohibit sharing sensitive data with third parties
-- **Multi-Device Challenge**: Users access AI from phones, browsers, and APIs - each requiring different security
-- **Lack of Visibility**: IT has no insight into what data is being sent to AI services
-- **Shadow AI**: Employees use AI tools without IT approval, creating unmanaged risk
-
-## The Solution
-
-Proxilion provides a **unified security layer** that intercepts and controls all AI traffic across every device:
+Proxilion GRC sits between users and AI providers, scanning all requests for sensitive data:
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│  Mobile (iOS/Android)  Browser  API Calls                   │
-│         ↓                      ↓            ↓                │
-│  ┌──────────────────────────────────────────────────┐       │
-│  │         Proxilion Security Layer                 │       │
-│  │  • 30+ PII Patterns  • 23+ Compliance Rules     │       │
-│  │  • Real-time Blocking • Complete Audit Trails   │       │
-│  └──────────────────────────────────────────────────┘       │
-│         ↓                      ↓            ↓                │
-│  ChatGPT          Claude        Gemini                       │
-└─────────────────────────────────────────────────────────────┘
+User Request --> Proxilion GRC --> AI Provider
+                     |
+              [Security Scanning]
+              - PII Detection
+              - Compliance Rules
+              - Policy Enforcement
+              - Audit Logging
 ```
 
-### Universal Coverage
+**Supported AI Providers:**
+- OpenAI (GPT-4, GPT-3.5, ChatGPT)
+- Anthropic (Claude 3, Claude 2)
+- Google (Gemini, PaLM)
+- Cohere (Command, Generate)
+- AWS Bedrock
+- Azure OpenAI
 
-| Access Method | How Proxilion Protects | Deployment |
-|---------------|------------------------|------------|
-| **Mobile** | MDM-enforced proxy configuration | Push via Intune, Jamf, Workspace ONE |
-| **Browser** | DNS override + MITM proxy | Corporate DNS + certificate trust |
-| **API** | SDK integration or API gateway | Environment variable or SDK |
+---
 
-**Result**: Complete AI security across every device, every access method, every user.
+## Deployment Options
 
-## Key Features
+| Method | Description |
+|--------|-------------|
+| **Cloudflare Workers** | Edge deployment at 300+ global locations |
+| **Docker** | Single container deployment |
+| **Kubernetes** | Scalable cluster deployment with HPA |
+| **Self-hosted** | Direct Node.js on Linux servers |
 
-### Universal Device Support
+---
 
-**Mobile Devices (iOS & Android)**
-- MDM-enforced proxy configuration (Intune, Jamf, Workspace ONE)
-- Automatic certificate trust deployment
-- Works with all mobile browsers and apps
-- Cannot be bypassed by users
-- Real-time PII blocking on mobile
+## Features
 
-**Browser-Based Access (All Platforms)**
-- DNS override + MITM proxy interception
-- Supports Chrome, Firefox, Safari, Edge
-- Transparent to users (no browser extensions needed)
-- Works with ChatGPT, Claude, Gemini web interfaces
-- Certificate-based trust (deployed via Group Policy/MDM)
+### Security Scanning
 
-**API & Programmatic Access**
-- SDK integration for applications
-- API gateway mode (environment variable override)
-- Same security policies as browser/mobile
-- Supports OpenAI, Anthropic, Google APIs
-- Audit trails for programmatic access
-
-### Comprehensive PII & Sensitive Data Detection (30+ Patterns)
-
-**Financial Data**
-- Credit cards (Visa, Mastercard, Amex, Discover) with Luhn algorithm validation
+**PII Detection (30+ patterns):**
+- Credit cards (Visa, Mastercard, Amex, Discover) with Luhn validation
+- US Social Security Numbers with area/group/serial validation
 - Bank routing numbers with checksum validation
-- Bank account numbers, IBAN, SWIFT codes
-- Cryptocurrency wallet addresses (Bitcoin, Ethereum)
+- IBAN, SWIFT codes
+- Email addresses, phone numbers
+- Medicare IDs, NPI, DEA numbers
+- Driver's licenses, passports, tax IDs
 
-**Identity Information**
-- US Social Security Numbers (SSN) with area/group/serial validation
-- Driver's licenses (US state formats)
-- Passport numbers (US and international)
-- Tax IDs (ITIN, EIN)
+**Compliance Standards (23+):**
+- US Federal: HIPAA, PCI-DSS, SOX, GLBA, FERPA, COPPA
+- US State: CCPA/CPRA, VCDPA, CPA, CTDPA, UCPA
+- International: GDPR, PIPEDA, LGPD, PDPA
+- Industry: SOC2, ISO 27001, NIST
 
-**Contact Information**
-- Email addresses (RFC-compliant)
-- Phone numbers (US and international formats)
-- US ZIP codes
-- IP addresses (IPv4, IPv6), MAC addresses
+### Policy Engine
 
-**Health Information**
-- Medicare Beneficiary Identifiers (MBI)
-- National Provider Identifiers (NPI)
-- DEA numbers
+- Priority-based rule evaluation
+- Actions: BLOCK, ALLOW, MODIFY, ALERT, LOG, QUEUE, REDIRECT
+- Configurable threat levels: NONE, LOW, MEDIUM, HIGH, CRITICAL
+- Default policies included
 
-**Government & Other**
-- Military IDs, Vehicle Identification Numbers (VIN)
-- Biometric data references
+### Enterprise Integration
 
-### 📋 Compliance Framework (23+ Standards)
+- SIEM: Splunk, QRadar, ArcSight, Sentinel, Elastic
+- Event formats: CEF, LEEF, JSON, Syslog
+- Webhook management
+- API Key and JWT authentication
 
-**US Federal Regulations**
-- **HIPAA**: Protected Health Information (PHI) detection and blocking
-- **PCI-DSS**: Cardholder data protection
-- **SOX**: Financial data integrity and audit trails
-- **GLBA**: Nonpublic personal information protection
-- **FERPA**: Education records protection
-- **COPPA**: Children's data collection controls
+### Performance
 
-**US State Privacy Laws**
-- **CCPA/CPRA** (California): Consumer privacy rights
-- **VCDPA** (Virginia), **CPA** (Colorado), **CTDPA** (Connecticut), **UCPA** (Utah)
+- LRU/LFU/FIFO caching (configurable)
+- Request deduplication
+- Rate limiting (token bucket, sliding window, fixed window, leaky bucket algorithms)
+- Connection pooling
+- Streaming SSE support with real-time PII redaction
 
-**International Regulations**
-- **GDPR** (EU): Personal data processing and transfer controls
-- **PIPEDA** (Canada): Consent and data protection
-- **LGPD** (Brazil): Data subject rights and lawful processing
-- **PDPA** (Singapore): Consent and purpose limitation
+### Observability
 
-**Industry Standards**
-- **SOC2**: Access controls and audit logging
-- **ISO 27001**: Security policy and asset management
-- **NIST**: Framework compliance
+- Prometheus metrics endpoint
+- OpenTelemetry tracing
+- Grafana dashboards (pre-built)
+- Real-time WebSocket monitoring
 
-### 🎛️ Advanced Web UI (5 Comprehensive Pages)
+### Additional Features
 
-1. **Dashboard** (`/dashboard`): Real-time metrics across mobile, browser, and API traffic
-2. **Security Controls** (`/security`): Configure PII detection patterns, enable/disable by category
-3. **Policy Management** (`/policies`): Visual policy builder with priority-based execution
-4. **Live Monitor** (`/monitor`): Real-time WebSocket updates for blocked requests
-5. **Certificate Management** (`/certificates`): CA certificate distribution and installation guides
+- Multi-tenancy with isolated security contexts
+- Cost tracking per user/tenant/provider/model
+- Budget limits with threshold alerts
+- ML-based anomaly detection (Isolation Forest, Autoencoder)
+- GraphQL API gateway
+- Workflow orchestration
+- Prompt version management
 
-### 🚀 Enterprise-Ready Features
+---
 
-- **Global Deployment**: Cloudflare Workers (300+ locations) or self-hosted
-- **Auto-Scaling**: Handles any load automatically (0 to millions of requests)
-- **High Availability**: 99.99% uptime SLA
-- **Low Latency**: <10ms overhead per request
-- **MITM Certificate Management**: Automated CA generation, domain certificate signing, rotation
-- **Real-Time Blocking**: Immediate prevention of sensitive data exposure
-- **Audit Logging**: Complete audit trails with SIEM integration
-- **Policy Engine**: Flexible, priority-based policy enforcement
-- **Multi-Device Support**: Unified security across mobile, browser, and API
-
-### AI Workflow Orchestration
-- **Multi-Step Workflows**: Chain multiple AI requests with dependencies
-- **Conditional Logic**: If/else branching based on AI responses
-- **Parallel Execution**: Run independent steps concurrently for speed
-- **Loop Iteration**: Process arrays with AI operations
-- **Template System**: Reusable workflow templates with parameters
-- **Version Control**: Git-like versioning with rollback and diff
-- **Analytics**: Track workflow performance and success rates
-- **Error Handling**: Automatic retries with exponential backoff
-
-### GraphQL API Gateway
-- **Unified API**: Single GraphQL endpoint for all Proxilion features
-- **Type-Safe**: Full TypeScript support with auto-generated types
-- **Real-Time Subscriptions**: Live metrics, alerts, and workflow updates
-- **Interactive Playground**: Built-in GraphiQL for API exploration
-- **Comprehensive Coverage**: Policies, scanners, workflows, prompts, models, analytics
-- **Authentication**: API key and Bearer token support
-- **Batching**: Multiple queries in a single request
-- **Error Handling**: Structured errors with detailed codes
-
-### Request/Response Validation
-- **JSON Schema Support**: Validate data against JSON Schema (Draft 7)
-- **Schema Registry**: Centralized management with versioning and caching
-- **Automatic Validation**: Validate requests and responses automatically
-- **Flexible Mapping**: Map schemas to providers, models, and endpoints
-- **Detailed Errors**: Get precise error messages with field paths
-- **Performance**: 5ms average validation time with 95%+ cache hit rate
-- **Statistics**: Track validation metrics and error patterns
-- **Configurable**: Enable/disable validation per direction
-
-### Response Content Scanning & Redaction
-- **PII Detection**: Scan responses for SSN, emails, phones, credit cards
-- **Credential Detection**: Detect API keys, passwords, private keys, tokens
-- **Harmful Content**: Block violence, hate speech, self-harm, illegal content
-- **Malicious Code**: Detect SQL injection, XSS, command injection
-- **Auto-Redaction**: Automatically mask, remove, or replace sensitive data
-- **Threat Assessment**: NONE, LOW, MEDIUM, HIGH, CRITICAL levels
-- **Response Filtering**: Block or modify responses based on policies
-- **Audit Trail**: Complete logging of all redactions for compliance
-
-### ML-Based Anomaly Detection
-- **Dual ML Models**: Isolation Forest and Autoencoder neural networks
-- **Usage Pattern Detection**: Identify unusual request rates, traffic spikes, DDoS attempts
-- **Security Threat Detection**: Detect security violations, credential abuse, new IP addresses
-- **Cost Anomaly Detection**: Alert on unexpected cost increases and expensive model usage
-- **Performance Anomaly Detection**: Monitor latency spikes and elevated error rates
-- **Behavioral Analysis**: Track new models/providers, unusual access times, data exfiltration
-- **Behavioral Profiling**: Learn normal patterns for users and applications
-- **Anomaly Scoring**: Multi-factor scoring with confidence levels (0-100)
-- **Proactive Security**: Detect threats before they cause damage
-
-### Web UI Dashboard
-- **Real-Time Monitoring**: Live metrics with auto-refresh every 5 seconds
-- **Interactive Charts**: Request volume, security threats, and performance trends
-- **Alert Management**: View and acknowledge security alerts with severity indicators
-- **Provider Status**: Monitor health and performance of all AI providers
-- **Cost Analytics**: Track spending, top models, and cost per request
-- **Performance Metrics**: Latency, cache hit rate, error rates, and success rates
-- **Modern UI**: Built with Next.js, React, and Tailwind CSS
-- **Responsive Design**: Works on desktop, tablet, and mobile devices
-
-## 🚀 Quick Start
-
-### 5-Minute Setup
+## Quick Start
 
 ```bash
 # Clone and install
@@ -223,341 +109,293 @@ git clone https://github.com/proxilion/proxilion.git
 cd proxilion
 npm install
 
-# Build and start
+# Build
 npm run build
+
+# Run tests
+npm test
+
+# Start server
 npm start
 
-# Access admin dashboard
-open http://localhost:8788
+# Access endpoints
+# Proxy: http://localhost:8787
+# Admin: http://localhost:8788
+# Health: http://localhost:8787/health
+# Metrics: http://localhost:8787/metrics
 ```
 
-### Production Deployment
-
-**Choose your deployment method:**
-
-| Method | Best For | Setup Time |
-|--------|----------|------------|
-| **[Cloudflare Workers](docs/SETUP.md#option-1-cloudflare-workers-recommended)** | Global enterprises, zero infrastructure | 5 minutes |
-| **[Self-Hosted](docs/SETUP.md#option-2-self-hosted-on-premises)** | Regulated industries, data sovereignty | 10 minutes |
-| **[Docker/Kubernetes](docs/SETUP.md#option-3-docker)** | Containerized environments | 5 minutes |
-
-**📖 See [docs/SETUP.md](docs/SETUP.md) for complete deployment instructions including:**
-- DNS configuration (BIND, Windows DNS, Pi-hole, Cloudflare Gateway)
-- MDM setup (Intune, Jamf, Workspace ONE)
-- Certificate installation (Windows, macOS, Linux, iOS, Android)
-- VPN integration (OpenVPN, WireGuard)
-- Troubleshooting and verification
-
-## 📖 How It Works
-
-Proxilion sits between your users and AI providers, inspecting every request in real-time:
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│  User Device (Mobile/Browser/API)                           │
-│         ↓                                                    │
-│  ┌──────────────────────────────────────────────────┐       │
-│  │         Proxilion Security Layer                 │       │
-│  │  • Intercept (DNS/MDM/VPN)                      │       │
-│  │  • Inspect (30+ PII patterns)                   │       │
-│  │  • Enforce (23+ compliance rules)               │       │
-│  │  • Audit (complete logs)                        │       │
-│  └──────────────────────────────────────────────────┘       │
-│         ↓                                                    │
-│  AI Provider (ChatGPT/Claude/Gemini)                        │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### Real-World Example: Healthcare
-
-**Scenario**: Doctor tries to send patient data to ChatGPT
-
-```
-Doctor types: "Patient John Doe, MBI 1EG4-TE5-MK73, presents with..."
-
-↓ Proxilion detects:
-  • Patient name (PHI)
-  • Medicare Beneficiary Identifier (MBI)
-  • HIPAA violation
-
-↓ Request BLOCKED
-
-Doctor sees: "⚠️ Request blocked: Protected Health Information (PHI) detected"
-
-↓ Compliance officer sees in dashboard:
-  • User: dr.smith@hospital.com
-  • Threat: HIPAA violation
-  • Action: Blocked
-  • Timestamp: 2025-10-21 14:32:15
-```
-
-**Result**: Zero PHI exposure, complete HIPAA compliance, doctor can still use AI safely
-
-**📖 See [docs/SETUP.md](docs/SETUP.md) for detailed deployment flows for mobile, browser, and API access.**
-
-## 📚 Documentation
-
-### Essential Guides
-
-| Guide | Description |
-|-------|-------------|
-| **[Setup Guide](docs/SETUP.md)** | Complete deployment guide: Cloudflare Workers, self-hosted, Docker, DNS, MDM, certificates |
-| **[Architecture](docs/ARCHITECTURE.md)** | Technical architecture, components, and design decisions |
-| **[Advanced Features](docs/ADVANCED_FEATURES.md)** | Cost tracking, analytics, multi-tenancy, custom scanners |
-| **[Performance Optimization](docs/PERFORMANCE_OPTIMIZATION.md)** | Tuning, caching, benchmarks, and best practices |
-| **[GraphQL API](docs/GRAPHQL_API.md)** | API documentation for programmatic access |
-
-### Architecture Overview
-
-Proxilion provides universal AI security across all devices and access methods:
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                     User Browser                             │
-│              (chat.openai.com, claude.ai, etc.)             │
-└────────────────────────┬────────────────────────────────────┘
-                         │ DNS Resolution
-                         ▼
-┌─────────────────────────────────────────────────────────────┐
-│                  MITM Proxy Layer                            │
-│  • HTTPS Interception  • Certificate Management             │
-│  • Session Tracking    • WebSocket Support                  │
-└────────────────────────┬────────────────────────────────────┘
-                         │
-                         ▼
-┌─────────────────────────────────────────────────────────────┐
-│                  Security Scanning Pipeline                  │
-│  • PII Detection (30+ patterns)                             │
-│  • Compliance Validation (23+ standards)                    │
-│  • Credential Detection                                      │
-└────────────────────────┬────────────────────────────────────┘
-                         │
-                         ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    Policy Engine                             │
-│  • Priority-Based Evaluation                                │
-│  • Risk Scoring (NONE → CRITICAL)                           │
-│  • Action Decision (Block/Allow/Redact)                     │
-└────────────────────────┬────────────────────────────────────┘
-                         │
-                         ▼
-┌─────────────────────────────────────────────────────────────┐
-│                  Audit & Reporting                           │
-│  • Event Logging  • SIEM Integration  • Compliance Reports  │
-└────────────────────────┬────────────────────────────────────┘
-                         │
-                         ▼
-┌─────────────────────────────────────────────────────────────┐
-│                     AI Service Provider                      │
-│  • OpenAI ChatGPT  • Anthropic Claude  • Google Gemini      │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### Core Components
-
-#### 1. MITM Proxy Layer (`src/proxy/`)
-Intercepts browser-based HTTPS traffic to AI providers:
-- **Certificate Manager**: Automated CA generation and domain certificate signing
-- **Session Tracker**: Cookie-based user attribution and session management
-- **Connection Pooling**: Efficient resource management
-- **WebSocket Support**: Real-time monitoring and streaming
-
-#### 2. Security Scanning Pipeline (`src/scanners/`)
-Multi-layered scanning for sensitive data and compliance:
-- **PII Scanner**: 30+ patterns with advanced validators (Luhn, SSN, routing numbers)
-- **Compliance Scanner**: 23+ regulatory standards (HIPAA, PCI-DSS, GDPR, CCPA, etc.)
-- **DLP Scanner**: Credentials, API keys, source code detection
-- **Threat Assessment**: NONE, LOW, MEDIUM, HIGH, CRITICAL levels
-
-#### 3. Policy Engine (`src/policy/`)
-Flexible, priority-based policy enforcement:
-- **Condition Evaluation**: Complex boolean logic with AND/OR operators
-- **Risk Scoring**: Automatic threat level assessment
-- **Action Execution**: Block, allow, redact, alert, queue
-- **Priority Management**: Higher priority policies evaluated first
-
-#### 4. Audit & Reporting (`src/reporting/`)
-Comprehensive audit trails and compliance reporting:
-- **Audit Logger**: Complete event logging with correlation IDs
-- **SIEM Integration**: Forward events to external SIEM systems
-- **Reporting Engine**: Compliance, security, and executive reports
-- **Metrics Collection**: Prometheus-compatible metrics
-
-#### 5. Web UI (`ui/src/app/`)
-Modern, responsive admin dashboard:
-- **Security Controls**: Configure PII patterns and detection rules
-- **Policy Management**: Visual policy builder with testing
-- **Live Monitor**: Real-time WebSocket-based monitoring
-- **Certificate Management**: CA distribution and installation guides
-- **Compliance Reports**: Audit trails and compliance scores
-
-### Configuration
-
-See [.env.example](.env.example) for all configuration options.
-
-**Key settings:**
-- `PORT=8787` - Proxy server port
-- `ADMIN_PORT=8788` - Admin dashboard port
-- `CA_CERT_PATH` - Path to CA certificate
-- `DATABASE_URL` - Optional database connection
-- `SIEM_ENDPOINT` - Optional SIEM integration
-
-**📖 See [docs/SETUP.md](docs/SETUP.md) for detailed configuration instructions.**
-
-### Usage Examples
-
-**Access the admin dashboard:** `http://your-server:8788`
-
-- **Security Controls** (`/security`) - Configure PII patterns and detection rules
-- **Policy Management** (`/policies`) - Create and manage security policies
-- **Live Monitor** (`/monitor`) - View real-time blocked requests and alerts
-- **Compliance Reports** (`/reports`) - Generate audit reports for compliance
-
-**📖 See [docs/SETUP.md](docs/SETUP.md) for detailed usage instructions and examples.**
-
-## 🔧 Advanced Configuration
-
-### Custom PII Patterns
-
-Add organization-specific patterns via API or Web UI:
+### Docker
 
 ```bash
-curl -X POST http://localhost:8788/api/patterns \
-  -H "Content-Type: application/json" \
-  -d '{"id": "custom-employee-id", "pattern": "EMP-[0-9]{6}", "severity": "HIGH"}'
+docker build -t proxilion:latest .
+docker run -p 8787:8787 -p 8788:8788 proxilion:latest
 ```
 
-### SIEM Integration
-
-Forward audit events to Splunk, Datadog, or any SIEM:
+### Docker Compose (with Prometheus/Grafana)
 
 ```bash
-curl -X POST http://localhost:8788/api/integrations/siem \
-  -H "Content-Type: application/json" \
-  -d '{"endpoint": "https://siem.example.com/events", "apiKey": "your-key"}'
+docker-compose up -d
 ```
 
-**📖 See [docs/ADVANCED_FEATURES.md](docs/ADVANCED_FEATURES.md) for more advanced configuration options.**
+---
 
-## 🧪 Testing
+## API Endpoints
 
-### Run All Tests
+| Endpoint | Description |
+|----------|-------------|
+| `GET /health` | Health check |
+| `GET /status` | Detailed status with component info |
+| `GET /metrics` | JSON metrics |
+| `GET /metrics/prometheus` | Prometheus format metrics |
+| `ALL /proxy/*` | Proxy endpoint for AI requests |
+| `ALL /graphql` | GraphQL API gateway |
+| `GET /admin/*` | Admin API endpoints |
+
+---
+
+## Configuration
+
+Key environment variables:
 
 ```bash
+PORT=8787                    # Proxy server port
+ADMIN_PORT=8788             # Admin dashboard port
+AUTH_METHOD=API_KEY         # API_KEY, JWT, or NONE
+API_KEYS=key1,key2          # Comma-separated API keys
+SIEM_ENABLED=false          # Enable SIEM forwarding
+SIEM_VENDOR=GENERIC         # SPLUNK, QRADAR, ARCSIGHT, SENTINEL, ELASTIC
+SIEM_ENDPOINT=              # SIEM endpoint URL
+```
+
+See [docs/SETUP.md](docs/SETUP.md) for complete configuration reference.
+
+---
+
+## Documentation
+
+### Getting Started
+| Document | Description |
+|----------|-------------|
+| [Quick Start](docs/QUICKSTART.md) | Fast setup guide |
+| [Setup Guide](docs/SETUP.md) | Detailed deployment and configuration |
+| [Architecture](docs/ARCHITECTURE.md) | System design and components |
+
+### Security & Scanning
+| Document | Description |
+|----------|-------------|
+| [Security](docs/SECURITY.md) | Security best practices |
+| [Custom Scanner SDK](docs/CUSTOM_SCANNER_SDK.md) | Build custom security scanners |
+| [Response Scanning](docs/RESPONSE_SCANNING.md) | Scan AI responses for sensitive data |
+| [Validation](docs/VALIDATION.md) | Request/response validation |
+| [Self-Service Patterns](docs/SELF_SERVICE_PATTERN_MANAGEMENT.md) | Manage detection patterns |
+
+### Deployment & Operations
+| Document | Description |
+|----------|-------------|
+| [High Availability](docs/HIGH_AVAILABILITY.md) | HA deployment guide |
+| [Disaster Recovery](docs/DISASTER_RECOVERY.md) | Backup and recovery procedures |
+| [Upgrade/Rollback](docs/UPGRADE_ROLLBACK.md) | Version upgrade and rollback |
+| [MDM Configuration](docs/MDM_CONFIGURATION.md) | Mobile device management |
+| [DNS Configuration](docs/DNS_CONFIGURATION.md) | DNS override for transparent proxy |
+| [Certificate Installation](docs/CERTIFICATE_INSTALLATION.md) | Per-platform certificate setup |
+
+### Performance & Monitoring
+| Document | Description |
+|----------|-------------|
+| [Performance](docs/PERFORMANCE.md) | Performance characteristics |
+| [Performance Optimization](docs/PERFORMANCE_OPTIMIZATION.md) | Tuning and optimization |
+| [Rate Limiting API](docs/RATE_LIMITING.md) | Rate limiting configuration |
+| [Observability](docs/OBSERVABILITY.md) | Prometheus, Grafana, OpenTelemetry |
+| [Streaming](docs/STREAMING.md) | SSE streaming support |
+
+### Features & Integration
+| Document | Description |
+|----------|-------------|
+| [Advanced Features](docs/ADVANCED_FEATURES.md) | Advanced capabilities |
+| [Anomaly Detection](docs/ANOMALY_DETECTION.md) | ML-based anomaly detection |
+| [Enterprise Integration](docs/ENTERPRISE_INTEGRATION.md) | SIEM, webhooks, alerting |
+| [GraphQL API](docs/GRAPHQL_API.md) | GraphQL API documentation |
+| [User Identity & Analytics](docs/USER_IDENTITY_AND_ANALYTICS.md) | User tracking and analytics |
+| [Migration Guide](docs/MIGRATION_GUIDE.md) | Migration from other solutions |
+| [Release Notes](docs/RELEASE_NOTES.md) | Version history |
+
+---
+
+## Known Limitations and Honest Assessment
+
+### What Works
+
+1. **Core proxy functionality** - Request interception and forwarding works
+2. **PII scanning** - 30+ patterns with validation algorithms implemented and tested
+3. **Compliance scanning** - 23+ standards with rule sets
+4. **Policy engine** - Priority-based evaluation and actions
+5. **SIEM integration** - Event forwarding to major vendors
+6. **Test coverage** - 874/874 tests passing (100%)
+7. **Build system** - TypeScript compilation and bundling works
+8. **Rate limiting** - Four algorithms implemented and tested
+9. **Certificate rotation** - Automated expiry monitoring, renewal, and rollback
+10. **Custom Scanner SDK** - Extensibility for custom security scanners
+
+### What Has Limitations
+
+1. **MITM Certificate Management**
+   - CA generation and domain signing implemented
+   - Automatic distribution to devices NOT implemented
+   - Manual certificate installation required on each client device
+   - Certificate rotation automation implemented (see src/certificates/certificate-rotation.ts)
+   - MDM configuration guides provided but no direct MDM API integration
+
+2. **Mobile Device Support**
+   - Architecture designed but NOT production-tested
+   - MDM configuration documentation provided (see docs/MDM_CONFIGURATION.md)
+   - Mobile integration tests implemented (60 tests in tests/mobile-integration/)
+   - No actual MDM API integration code (configuration guides only)
+   - Certificate deployment to mobile devices is manual
+
+3. **DNS Configuration**
+   - Requires manual DNS server configuration
+   - No built-in DNS management
+   - Split-horizon DNS setup is complex and manual
+   - Documentation provided (see docs/DNS_CONFIGURATION.md)
+
+4. **Transparent Proxy Mode**
+   - Works only when DNS is manually configured to point to proxy
+   - Requires TLS certificate trust on all clients
+   - Browser users must manually trust the CA certificate
+
+5. **ML Anomaly Detection**
+   - Isolation Forest and Autoencoder are implemented
+   - Training on synthetic/default data only
+   - No production validation of detection accuracy
+   - May produce false positives without tuning
+
+6. **Performance Claims**
+   - "10,000+ requests/second" - NOT independently validated
+   - "99.99% uptime SLA" - No actual SLA exists, this is aspirational
+   - Load testing at scale (100k+ connections) not performed
+
+7. **Web UI**
+   - Dashboard server implemented
+   - UI frontend build exists in `ui/` directory
+   - Requires separate build step (`npm run build:ui`)
+   - No authentication on admin dashboard by default
+
+8. **High Availability**
+   - Kubernetes manifests exist with anti-affinity and HPA
+   - HA deployment guide provided (see docs/HIGH_AVAILABILITY.md)
+   - DR documentation provided (see docs/DISASTER_RECOVERY.md)
+   - Certificate rotation tests implemented (29 tests)
+   - No automated DR testing in CI/CD pipeline
+
+### What Is NOT Implemented
+
+1. **Advanced ML** - Deep learning pattern generation not implemented
+2. **Blockchain integration** - Not implemented
+3. **Federated learning** - Not implemented
+4. **GPU acceleration** - Not implemented
+5. **Zero-knowledge proof verification** - Not implemented
+6. **Automatic certificate distribution** - Not implemented
+7. **MDM API integration** - Not implemented (documentation only)
+8. **Security audit** - No penetration testing or SOC 2 certification
+9. **Email alerting** - Alert manager has Slack, PagerDuty, Teams, webhooks but email is a placeholder
+10. **Real embedding providers** - Semantic caching uses simple hash; OpenAI/Cohere embeddings not implemented
+11. **Redis distributed rate limiting** - In-memory only; Redis backend documented but not implemented
+12. **Database migrations** - No migration system exists despite documentation references
+13. **Least-cost load balancing** - Load balancer has the option but falls back to round-robin (no cost data integration)
+14. **Cross-provider request transformation** - Only OpenAI-to-Anthropic transformation is fully implemented; other provider transformations (Anthropic-to-OpenAI, Google-to-*, Cohere-to-*) are placeholder stubs that pass requests through unchanged
+15. **YAML schema export** - Schema registry only exports JSON; YAML export throws "not yet implemented" error
+16. **GraphQL cost-by-user queries** - costsByUser resolver returns empty array; per-user cost tracking not implemented in GraphQL layer
+17. **Response content filtering** - filterContent() method in response processor is a pass-through; no ML-based or rule-based content filtering implemented
+
+### Security Considerations
+
+1. **No published penetration test results**
+2. **No SOC 2 certification**
+3. **Certificate key security depends on file permissions**
+4. **No automatic security scanning in CI pipeline**
+5. **No vulnerability disclosure policy**
+6. **Admin dashboard has no authentication by default**
+7. **CORS is permissive by default**
+
+### Testing Limitations
+
+1. **No end-to-end tests with real AI providers** - All tests use mocks
+2. **No load testing infrastructure** - Performance claims unvalidated
+3. **Mobile tests are unit tests** - No actual device testing
+4. **No chaos engineering tests** - Failure modes untested
+
+---
+
+## Architecture
+
+```
+src/
+  index.ts                 # Main entry point (Hono app)
+  scanners/                # PII, compliance, DLP, toxicity scanners
+  policy/                  # Policy engine and rule evaluation
+  proxy/                   # Connection pool, request handler
+  parsers/                 # Provider-specific request parsers
+  integrations/            # SIEM, webhooks, auth, alerting
+  analytics/               # Usage analytics and reporting
+  anomaly/                 # ML-based anomaly detection
+  cache/                   # LRU/LFU/FIFO caching
+  caching/                 # Request deduplication
+  certificates/            # Certificate management and rotation
+  cost/                    # Cost tracking and budgets
+  graphql/                 # GraphQL server and subscriptions
+  streaming/               # SSE stream processing with PII redaction
+  tenancy/                 # Multi-tenant isolation
+  observability/           # Prometheus, OpenTelemetry, Grafana
+  performance/             # Rate limiting (4 algorithms)
+  admin/                   # Admin dashboard server
+  batch/                   # Batch processing
+  config/                  # Configuration management
+  experimentation/         # A/B testing support
+  health/                  # Health check endpoints
+  identity/                # User identity extraction
+  loadbalancer/            # Load balancing logic
+  ml/                      # Machine learning models
+  models/                  # Data models
+  monitoring/              # Real-time monitoring
+  prompts/                 # Prompt versioning
+  queue/                   # Request queuing
+  reporting/               # Report generation
+  response/                # Response scanning
+  routing/                 # Request routing
+  sdk/                     # Custom scanner SDK
+  transformation/          # Request/response transformation
+  types/                   # TypeScript types
+  utils/                   # Utilities and logging
+  validation/              # Schema validation
+  workflows/               # Workflow orchestration
+tests/                     # 43 test files, 874 tests
+  mobile-integration/      # MDM and mobile tests (60 tests)
+docs/                      # 26 documentation files
+ui/                        # Next.js admin dashboard
+k8s/                       # Kubernetes manifests
+deployment/                # Prometheus/Grafana configs
+```
+
+---
+
+## Testing
+
+```bash
+# Run all tests
 npm test
-```
 
-### Run Specific Test Suites
+# Run with coverage
+npm test -- --coverage
 
-```bash
-# PII Scanner tests
+# Run specific test file
 npm test -- tests/pii-scanner.test.ts
-
-# Compliance Scanner tests
-npm test -- tests/compliance-scanner.test.ts
-
-# Integration tests
-npm test -- tests/integration-e2e.test.ts
 ```
 
-### Test Coverage
+Current status: 874/874 tests passing (100%).
 
-Current test coverage: **98.5%** (773/785 tests passing)
+**Test Breakdown:**
+- Core tests: 785 tests
+- Mobile integration tests: 60 tests (tests/mobile-integration/)
+- Certificate rotation tests: 29 tests (tests/certificate-rotation.test.ts)
 
-```
-Test Files: 37 passed (39 total)
-Tests: 773 passed (785 total)
-Duration: ~8.6s
-```
-
-## 📦 Production Deployment
-
-### Quick Checklist
-
-- [ ] Deploy Proxilion (Cloudflare Workers or self-hosted)
-- [ ] Configure DNS/Gateway to route AI domains
-- [ ] Distribute CA certificate to all devices
-- [ ] Configure MDM for mobile devices (optional)
-- [ ] Test with sample PII data
-- [ ] Monitor dashboard for blocked requests
-
-**📖 See [docs/SETUP.md](docs/SETUP.md) for detailed deployment checklist and verification steps.**
-
-### Service Management (Self-Hosted)
-
-```bash
-# Start/stop/restart
-sudo systemctl start proxilion
-sudo systemctl stop proxilion
-sudo systemctl restart proxilion
-
-# View status and logs
-sudo systemctl status proxilion
-sudo journalctl -u proxilion -f
-```
-
-## 🤝 Contributing
-
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
-
-### Development Setup
-
-```bash
-# Fork and clone the repository
-git clone https://github.com/your-username/proxilion.git
-cd proxilion
-
-# Install dependencies
-npm install
-
-# Create a feature branch
-git checkout -b feature/your-feature-name
-
-# Make your changes and test
-npm test
-npm run build
-
-# Commit and push
-git commit -m "Add your feature"
-git push origin feature/your-feature-name
-
-# Open a pull request
-```
-
-### Code Style
-
-- TypeScript with strict mode enabled
-- ESLint for linting
-- Prettier for formatting
-- Comprehensive JSDoc comments
-- Unit tests for all new features
-
-## 🔒 Security
-
-### Security Best Practices
-
-1. **Certificate Security**: Protect CA private key with file permissions (600)
-2. **DNS Security**: Use DNSSEC to prevent DNS spoofing
-3. **Access Control**: Restrict admin dashboard access (firewall, VPN)
-4. **Audit Logs**: Regularly review audit logs for suspicious activity
-5. **Updates**: Keep Proxilion and dependencies up to date
-6. **Encryption**: Use TLS for all external integrations (SIEM, webhooks)
-
-## 📊 Performance
-
-### Benchmarks
-
-- **Latency Overhead**: ~5-10ms per request
-- **Throughput**: 10,000+ requests/second (single instance)
-- **Memory Usage**: ~200MB baseline, ~500MB under load
-- **CPU Usage**: <10% idle, ~30% under load
-- **Pattern Matching**: <1ms for 30+ PII patterns
-- **Compliance Validation**: <2ms for 23+ standards
-
-### Optimization Tips
-
-1. Enable pattern caching for frequently used patterns
-2. Use priority-based policies to short-circuit evaluation
-3. Configure appropriate timeout values
-4. Monitor memory usage and adjust Node.js heap size
-5. Use connection pooling for external integrations
